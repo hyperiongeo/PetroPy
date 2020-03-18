@@ -32,7 +32,12 @@ file or PetroPy logo. To download all files, view the `examples folder`_ on GitH
 .. _bulk example: wolfcamp_bulk.html
 .. _examples folder: https://github.com/toddheitmann/PetroPy/tree/master/examples
 """
-
+import sys
+sys.path.append(r'C:\Users\hooge\Documents\GitHub\PetroPy')
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
+    
 import petropy as ptr
 
 # import pyplot to add logo to figure
@@ -42,12 +47,12 @@ import matplotlib.pyplot as plt
 
 # create a Log object by reading a file path  #
 
-las_file_path = '42303347740000.las'
+las_file_path = 'examples/42303347740000.las'
 log = ptr.Log(las_file_path)
 
 ### 2. load tops ###
 
-tops_file_path = 'tops.csv'
+tops_file_path = 'examples/tops.csv'
 log.tops_from_csv(tops_file_path)
 
 ### 3. graphically edit log ###
@@ -61,7 +66,8 @@ log.tops_from_csv(tops_file_path)
 # close both windows to continue program      #
 
 viewer = ptr.LogViewer(log, top = 6950, height = 100)
-viewer.show(edit_mode = True)
+# viewer.show(edit_mode = True)
+viewer.show()
 
 # overwrite log variable with updated log     #
 # from LogViewer edits                        #

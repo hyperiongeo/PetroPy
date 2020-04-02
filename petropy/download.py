@@ -17,10 +17,8 @@ from zipfile import ZipFile
 from io import BytesIO
 import pandas as pd
 
-if sys.version_info[0] < 3:
-    from urllib2 import urlopen
-else:
-    from urllib.request import urlopen
+
+from urllib.request import urlopen
 
 from .log import Log
 
@@ -172,6 +170,7 @@ def kgs_download(save_dir = None):
     """
 
     urls = [
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2019.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2018.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2017.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2016.zip',
@@ -185,8 +184,7 @@ def kgs_download(save_dir = None):
     ]
 
     if save_dir is None:
-        save_dir = os.path.join(os.path.dirname(__file__), 'data',
-                                'kgs')
+        save_dir = os.path.join(os.path.dirname(__file__), 'data',  'kgs')
 
     for url in urls:
         year_dir = os.path.join(save_dir,

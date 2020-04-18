@@ -119,8 +119,7 @@ def electrofacies(logs, formations, curves, n_clusters, log_scale = [],
     # minibatch_input = components.as_matrix()
     minibatch_input = components.values()
 
-    components.columns = \
-                   ['PC%i' % x for x in range(1, pc.n_components_ + 1)]
+    components.columns = ['PC%i' % x for x in range(1, pc.n_components_ + 1)]
 
     components['UWI'] = df.loc[not_null_rows, 'UWI']
     components['DEPTH_INDEX'] = df.loc[not_null_rows, 'DEPTH_INDEX']
@@ -174,8 +173,7 @@ def electrofacies(logs, formations, curves, n_clusters, log_scale = [],
             data[:] = np.nan
             depth_index = df.loc[df.UWI == uwi, 'DEPTH_INDEX']
 
-            data[depth_index] = \
-                             np.copy(df.loc[df.UWI == uwi, curve_name])
+            data[depth_index] = np.copy(df.loc[df.UWI == uwi, curve_name])
 
             log.add_curve(curve_name, np.copy(data),
                           descr = 'Electrofacies')

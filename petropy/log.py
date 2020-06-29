@@ -387,7 +387,7 @@ class Log(LASFile):
             the top of the log.
         bottom : float (default 100,000)
             The bottom depth to end fluid properties, inclusive. If the
-            value is not specified, the calcuations will go to the
+            value is not specified, the calculations will go to the
             end of the log.
         mast : float (default 67)
             The mean annual surface temperature at the location of the

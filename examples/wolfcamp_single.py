@@ -33,15 +33,16 @@ file or PetroPy logo. To download all files, view the `examples folder`_ on GitH
 .. _examples folder: https://github.com/toddheitmann/PetroPy/tree/master/examples
 """
 import sys
-sys.path.append(r'C:\Users\hooge\Documents\GitHub\PetroPy')
+sys.path.append(r'C:\Users\hooge\GitHub\Geology\PetroPy')
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
-    
+
 import petropy as ptr
 
 # import pyplot to add logo to figure
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 ### 1. Read las file
 
@@ -57,188 +58,182 @@ log.tops_from_csv(tops_file_path)
 
 ### 3. graphically edit log ###
 
-# use manual mode for fixing borehole washout #
-# and other changes requiring redrawing data  #
+# use manual mode for fixing borehole washout
+# and other changes requiring redrawing data
 
-# use bulk shift mode to linearly adjust all  #
-# curve data                                  #
+# use bulk shift mode to linearly adjust all  curve data
 
-# close both windows to continue program      #
+# close both windows to continue program
 
 viewer = ptr.LogViewer(log, top = 6950, height = 100)
-# viewer.show(edit_mode = True)
 viewer.show()
 
-# overwrite log variable with updated log     #
-# from LogViewer edits                        #
+# # overwrite log variable with updated log from LogViewer edits
 
-log = viewer.log
+# log = viewer.log
 
-### 4. define formations ###
+# ### 4. define formations ###
 
-f = ['WFMPA', 'WFMPB', 'WFMPC']
+# f = ['WFMPA', 'WFMPB', 'WFMPC']
 
-### 5. fluid properties ###
+# ### 5. fluid properties ###
 
-# load fluid properties from a csv file       #
-# since path is not specified, load default   #
-# csv file included with petropy              #
+# # load fluid properties from a csv file       #
+# # since path is not specified, load default   #
+# # csv file included with petropy              #
 
-log.fluid_properties_parameters_from_csv()
+# log.fluid_properties_parameters_from_csv()
 
-# calculate fluid properties over defined     #
-# formations with parameter WFMP from         #
-# previously loaded csv                       #
+# # calculate fluid properties over defined     #
+# # formations with parameter WFMP from         #
+# # previously loaded csv                       #
 
-log.formation_fluid_properties(f, parameter = 'WFMP')
+# log.formation_fluid_properties(f, parameter = 'WFMP')
 
-### 6. multimineral model ###
+# ### 6. multimineral model ###
 
-# load multimineral parameters from csv file  #
-# since path is not specified, load default   #
-# csv file included with petropy              #
+# # load multimineral parameters from csv file  #
+# # since path is not specified, load default   #
+# # csv file included with petropy              #
 
-log.multimineral_parameters_from_csv()
+# log.multimineral_parameters_from_csv()
 
-# calculate multiminearl model over defined   #
-# formations with parameter WFMP from         #
-# previously loaded csv                       #
+# # calculate multiminearl model over defined   #
+# # formations with parameter WFMP from         #
+# # previously loaded csv                       #
 
-log.formation_multimineral_model(f, parameter = 'WFMP')
+# log.formation_multimineral_model(f, parameter = 'WFMP')
 
-### 7. summations ###
+# ### 7. summations ###
 
-# define curves to calculate cumulative values #
+# # define curves to calculate cumulative values #
 
-c = ['OIP', 'BVH', 'PHIE']
+# c = ['OIP', 'BVH', 'PHIE']
 
-# calculate cumulative values over formations  #
+# # calculate cumulative values over formations  #
 
-log.summations(f, curves = c)
+# log.summations(f, curves = c)
 
-### 8. pay flags ###
+# ### 8. pay flags ###
 
-# define pay flogs as list of tuples for      #
-# (curve, value)                              #
+# # define pay flogs as list of tuples for      #
+# # (curve, value)                              #
 
-flag_1_gtoe = [('PHIE', 0.03)]
-flag_2_gtoe = [('PAY_FLAG_1', 1), ('BVH', 0.02)]
-flag_3_gtoe = [('PAY_FLAG_2', 1)]
-flag_3_ltoe = [('SW', 0.2)]
+# flag_1_gtoe = [('PHIE', 0.03)]
+# flag_2_gtoe = [('PAY_FLAG_1', 1), ('BVH', 0.02)]
+# flag_3_gtoe = [('PAY_FLAG_2', 1)]
+# flag_3_ltoe = [('SW', 0.2)]
 
-# add pay flags over defined formations       #
+# # add pay flags over defined formations       #
 
-log.add_pay_flag(f, greater_than_or_equal = flag_1_gtoe)
+# log.add_pay_flag(f, greater_than_or_equal = flag_1_gtoe)
 
-log.add_pay_flag(f, greater_than_or_equal = flag_2_gtoe)
+# log.add_pay_flag(f, greater_than_or_equal = flag_2_gtoe)
 
-log.add_pay_flag(f, greater_than_or_equal = flag_3_gtoe,
-                 less_than_or_equal = flag_3_ltoe)
+# log.add_pay_flag(f, greater_than_or_equal = flag_3_gtoe,
+#                 less_than_or_equal = flag_3_ltoe)
 
-### 9. electrofacies ###
+# ### 9. electrofacies ###
 
-# define curves to use in electofaceis module #
+# # define curves to use in electofaceis module #
 
-electro_logs = ['GR_N', 'RESDEEP_N', 'NPHI_N', 'RHOB_N', 'PE_N']
+# electro_logs = ['GR_N', 'RESDEEP_N', 'NPHI_N', 'RHOB_N', 'PE_N']
 
-# make a list of Log objects as input         #
+# # make a list of Log objects as input         #
 
-logs = [log]
+# logs = [log]
 
-# calculate electrofacies for the defined logs#
-# over the specified formations               #
-# finding 6 clusters of electrofacies         #
-# with RESDEEP_N logarithmically scaled       #
+# # calculate electrofacies for the defined logs#
+# # over the specified formations               #
+# # finding 6 clusters of electrofacies         #
+# # with RESDEEP_N logarithmically scaled       #
 
-logs = ptr.electrofacies(logs, f, electro_logs, 6,
-                         log_scale = ['RESDEEP_N'])
+# logs = ptr.electrofacies(logs, f, electro_logs, 6, log_scale = ['RESDEEP_N'])
 
-# unpack log object from returned list        #
+# # unpack log object from returned list        #
 
-log = logs[0]
+# log = logs[0]
 
-### 10. statistics ###
+# ### 10. statistics ###
 
-# define list of curves to find statistics    #
+# # define list of curves to find statistics    #
 
-stats_curves = ['OIP', 'BVH', 'PHIE', 'SW', 'VCLAY', 'TOC']
+# stats_curves = ['OIP', 'BVH', 'PHIE', 'SW', 'VCLAY', 'TOC']
 
-# calculate stats over specified formation and#
-# save to csv file wfmp_statistics.csv        #
-# update the line if the well, formation is   #
-# already included in the csv file            #
+# # calculate stats over specified formation and#
+# # save to csv file wfmp_statistics.csv        #
+# # update the line if the well, formation is   #
+# # already included in the csv file            #
 
-log.statistics_to_csv('wfmp_statistics.csv', replace = True,
-                      formations = f, curves = stats_curves,
-                      pay_flags = pay_flags, facies = facies_curves)
+# log.statistics_to_csv('wfmp_statistics.csv', replace = True,
+#                       formations = f, curves = stats_curves)
+#                     #   pay_flags = pay_flags, facies = facies_curves)
 
-### 11. export data ###
+# ### 11. export data ###
 
-# find way to name well, looking for well name#
-# or UWI or API                               #
+# # find way to name well, looking for well name or UWI or API                               
 
-if len(log.well['WELL'].value) > 0:
-    well_name = log.well['WELL'].value
-elif len(str(log.well['UWI'].value)) > 0:
-    well_name = str(log.well['UWI'].value)
-elif len(log.well['API'].value) > 0:
-    well_name = str(log.well['API'].value)
-else:
-    well_name = 'UNKNOWN'
-well_name = well_name.replace('.', '')
+# well_name = 'UNKNOWN'
+# if len(log.well['WELL'].value) > 0:
+#     well_name = log.well['WELL'].value
+# elif len(str(log.well['UWI'].value)) > 0:
+#     well_name = str(log.well['UWI'].value)
+# elif len(log.well['API'].value) > 0:
+#     well_name = str(log.well['API'].value)
 
-# scale height of viewer to top and bottom    #
-# of calculated values                        #
+# well_name = well_name.replace('.', '')
 
-wfmpa_top = log.tops['WFMPA']
-wfmpc_base = log.next_formation_depth('WFMPC')
+# # scale height of viewer to top and bottom    #
+# # of calculated values                        #
 
-top = wfmpa_top
-height = wfmpc_base - wfmpa_top
+# wfmpa_top = log.tops['WFMPA']
+# wfmpc_base = log.next_formation_depth('WFMPC')
 
-# create LogViewer with the default full_oil #
-# template included in petropy               #
+# top = wfmpa_top
+# height = wfmpc_base - wfmpa_top
 
-viewer = ptr.LogViewer(log, top = top, height = height,
-                       template_defaults = 'full_oil')
+# # create LogViewer with the default full_oil #
+# # template included in petropy               #
 
-# set viewer to 17x11 inches size for use in #
-# PowerPoint or printing to larger paper     #
+# viewer = ptr.LogViewer(log, top = top, height = height,
+#                        template_defaults = 'full_oil')
 
-viewer.fig.set_size_inches(17, 11)
+# # set viewer to 17x11 inches size for use in #
+# # PowerPoint or printing to larger paper     #
 
-# add well_name to title of LogViewer        #
+# viewer.fig.set_size_inches(17, 11)
 
-viewer.fig.suptitle(well_name, fontweight = 'bold', fontsize = 30)
+# # add well_name to title of LogViewer        #
 
-# add logo to top left corner                 #
+# viewer.fig.suptitle(well_name, fontweight = 'bold', fontsize = 30)
 
-logo_im = plt.imread('company_logo.png')
-logo_ax = viewer.fig.add_axes([0, 0.85, 0.2, 0.2])
-logo_ax.imshow(logo_im)
-logo_ax.axis('off')
+# # add logo to top left corner                 #
 
-# add text to top right corner                #
+# logo_im = plt.imread('examples/company_logo.png')
+# logo_ax = viewer.fig.add_axes([0, 0.85, 0.2, 0.2])
+# logo_ax.imshow(logo_im)
+# logo_ax.axis('off')
 
-if len(str(log.well['UWI'].value)) > 0:
-    label = 'UWI: ' + str(log.well['UWI'].value) + '\n'
-elif len(log.well['API'].value) > 0:
-    label = 'API: ' + str(log.well['API'].value) + '\n'
-else:
-    label = ''
+# # add text to top right corner                #
 
-label += 'County: Reagan\nCreated By: Todd Heitmann\n'
-label += 'Creation Date: October 23, 2017'
-viewer.axes[0].annotate(label, xy = (0.99,0.99),
-                    xycoords = 'figure fraction',
-                    horizontalalignment = 'right',
-                    verticalalignment = 'top',
-                    fontsize = 14)
+# label = ""
+# if len(str(log.well['UWI'].value)) > 0:
+#     label = f"UWI: {log.well['UWI'].value}\n"
+# elif len(log.well['API'].value) > 0:
+#     label = f"API: {log.well['API'].value}\n"
 
-# save figure and log                         #
+# label += 'County: Reagan\nCreated By: Todd Heitmann\n'
+# label += f"Creation Date: {datetime.now().strftime('%B %d, %Y')}"
+# viewer.axes[0].annotate(label, xy = (0.99,0.99),
+#                     xycoords = 'figure fraction',
+#                     horizontalalignment = 'right',
+#                     verticalalignment = 'top',
+#                     fontsize = 14)
 
-viewer_file_name=r'%s_processed.png' % well_name
-las_file_name = r'%s_processed.las' % well_name
+# # save figure and log
 
-viewer.fig.savefig(viewer_file_name)
-viewer.log.write(las_file_name)
+# viewer_file_name = f"{well_name}_processed.png"
+# las_file_name = f"{well_name}_processed.las"
+
+# viewer.fig.savefig(viewer_file_name)
+# viewer.log.write(las_file_name)

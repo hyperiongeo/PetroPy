@@ -14,13 +14,18 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 from matplotlib.backend_tools import ToolBase, ToolToggleBase
+import sys
+from collections import namedtuple
 
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
 
-mpl.rcParams['backend'] = 'TkAgg'
+# mpl.rcParams['backend'] = 'TkAgg'
 plt.rcParams['toolbar'] = 'toolmanager'
 
 
-class LogViewer(object):
+class LogViewer:
     """LogViewer
 
     Uses matplotlib to create a figure and axes to display log data.
@@ -155,7 +160,7 @@ class LogViewer(object):
 
 
     def __init__(self, log, template_xml_path = None,
-                 template_defaults = None, top = None, height = None):
+                    template_defaults = None, top = None, height = None):
         self.log = log
 
         self.template_xml_path = template_xml_path
@@ -163,13 +168,16 @@ class LogViewer(object):
         self.top = top
         self.height = height
 
+        self.pick_tolerance = 10
+        self.prev_mouse_event = None
+
         ### private parameters for graphically editing curves ###
 
         # stores display name of curve
-        self._edit_curve = None
+        self.edit_curve = None
 
         # stores matplotlib line objects by display name
-        self._edit_curve_lines = {}
+        self.edit_curve_lines = {}
 
         # stores bool to show downclick to edit curve
         self._edit_lock = False
@@ -189,8 +197,7 @@ class LogViewer(object):
 
         file_dir = os.path.dirname(__file__)
         if template_xml_path is None and template_defaults is None:
-            template_xml_path = os.path.join(file_dir, 'data',
-                                            'default_raw_template.xml')
+            template_xml_path = os.path.join(file_dir, 'data', 'default_raw_template.xml')
 
         elif template_xml_path is None and \
         template_defaults is not None:
@@ -200,19 +207,16 @@ class LogViewer(object):
                 print('template_defaults paramter must be in:')
                 for key in default_templates_paths:
                     print(key)
-                raise ValueError("%s is not valid template_defaults \
-                                 parameter" % template_defaults)
-            template_xml_path = os.path.join(file_dir, 'data',
-                                             file_name)
+                raise ValueError(f"{template_defaults} is not valid template_defaults parameter")
 
-        elif template_xml_path is not None and \
-        template_defaults is None:
+            template_xml_path = os.path.join(file_dir, 'data', file_name)
+
+        elif template_xml_path is not None and template_defaults is None:
             template_xml_path = template_xml_path
         else:
-            raise ValueError('template_xml_path and template_defaults \
-                              cannot both be specified.')
+            raise ValueError('template_xml_path and template_defaults cannot both be specified.')
 
-        with open(template_xml_path, 'r') as f:
+        with open(template_xml_path, 'r', encoding='utf-8') as f:
             root = ET.fromstring(f.read())
 
         if 'top' in root.attrib and top is None:
@@ -233,8 +237,7 @@ class LogViewer(object):
         num_tracks = len(tracks)
 
         self.fig, self.axes = plt.subplots(1, num_tracks + 2,
-                            sharey = True,
-                            subplot_kw={'projection': 'PetroPyAxes'})
+                            sharey = True, subplot_kw={'projection': 'PetroPyAxes'})
 
         ### add formation background color ###
         for formation in formations:
@@ -242,14 +245,12 @@ class LogViewer(object):
             if 'name' in formation.attrib:
                 name = formation.attrib['name']
             else:
-                raise ValueError('Formation name required in \
-                                  template %s' % template_xml_path)
+                raise ValueError(f'Formation name required in template {template_xml_path}')
 
             if 'color' in formation.attrib:
                 color = formation.attrib['color']
             else:
-                raise ValueError('Color required for formation %s \
-                           in template %s' % (name, template_xml_path))
+                raise ValueError('Color required for formation {name} in template {template_xml_path}')
 
             if 'alpha' in formation.attrib:
                 alpha = float(formation.attrib['alpha'])
@@ -260,8 +261,7 @@ class LogViewer(object):
             formation_bottom = self.log.next_formation_depth(name)
             formation_mid = (formation_top + formation_bottom) / 2.0
             for ax in self.axes:
-                ax.axhspan(formation_top, formation_bottom,
-                           facecolor = color, alpha = alpha)
+                ax.axhspan(formation_top, formation_bottom, facecolor = color, alpha = alpha)
 
             for ax in (self.axes[0], self.axes[-1]):
                 ax.text(0.5, formation_mid, name,
@@ -288,11 +288,12 @@ class LogViewer(object):
                 track_names.append(track_display_name)
             else:
                 track_names.append(None)
-                track_display_name = ''
+                track_display_name = ""
 
             if 'scale' in track.attrib:
                 scale = track.attrib['scale']
-                ax.set_xscale(scale, nonposx = 'clip')
+                #ax.set_xscale(scale, nonposx = 'clip')  NOTE SURE WHERE IS PARAMETER BELOS NOW, NOV 2022
+                ax.set_xscale(scale)
 
             track_width = 1
             if 'width' in track.attrib:
@@ -307,34 +308,28 @@ class LogViewer(object):
                 if 'tick_spacing' in track.attrib:
                     tick_spacing = int(track.attrib['tick_spacing'])
                 else:
-                    raise ValueError('tick_spacing is required for \
-                                                         depth track.')
+                    raise ValueError('tick_spacing is required for depth track.')
 
                 if 'number_spacing' in track.attrib:
                     number_spacing =int(track.attrib['number_spacing'])
                 else:
-                    raise ValueError('number_spacing is required for \
-                                                         depth track.')
+                    raise ValueError('number_spacing is required for depth track.')
 
                 if 'line_spacing' in track.attrib:
                     line_spacing = int(track.attrib['line_spacing'])
                 else:
-                    raise ValueError('line_spacing is required for \
-                                                         depth track.')
+                    raise ValueError('line_spacing is required for  depth track.')
 
                 font_size = 16
                 if 'font_size' in track.attrib:
                     font_size = float(track.attrib['font_size'])
 
                 max_depth = self.log[0].max()
-                ticks = range(0, int(max_depth) + tick_spacing,
-                              tick_spacing)
+                ticks = range(0, int(max_depth) + tick_spacing, tick_spacing)
 
-                numbers = range(0, int(max_depth) + number_spacing,
-                                number_spacing)
+                numbers = range(0, int(max_depth) + number_spacing, number_spacing)
 
-                lines = range(0, int(max_depth) + line_spacing,
-                              line_spacing)
+                lines = range(0, int(max_depth) + line_spacing, line_spacing)
 
                 for n in numbers:
                     ax.text(0.5, n, str(int(n)),
@@ -347,9 +342,8 @@ class LogViewer(object):
 
                 if 'left' not in track.attrib or \
                 'right' not in track.attrib:
-                    raise ValueError('left and right values must be \
-                     specified in cumulative tracks for template %s.' \
-                     % template_xml_path)
+                    raise ValueError(f'left and right values must be \
+                        specified in cumulative tracks for template {template_xml_path}.')
 
                 left = float(track.attrib['left'])
                 right = float(track.attrib['right'])
@@ -363,28 +357,23 @@ class LogViewer(object):
                 for c, curve in enumerate(track):
                     ### names ###
                     if 'curve_name' not in curve.attrib:
-                        raise ValueError('Curve Name required in \
-                                   template at %s' % template_xml_path)
+                        raise ValueError(f'Curve Name required in template at {template_xml_path}')
                     curve_name = curve.attrib['curve_name']
 
                     if curve_name not in self.log.keys():
-                        raise ValueError('Curve %s not found in log.' \
-                                         % curve_name)
+                        raise ValueError(f'Curve {curve_name} not found in log.')
 
                     if 'fill_color' not in curve.attrib:
-                        raise ValueError('Curve fill_color must be \
-                                         specificied for cumulative \
-                                         track in template at %s' % \
-                                         template_xml_path)
+                        raise ValueError(f'Curve fill_color must be \
+                                            specificied for cumulative \
+                                            track in template at {template_xml_path}')
 
                     fill_color = curve.attrib['fill_color']
 
                     increase=summation+np.asarray(self.log[curve_name])
 
-                    ax.fill_betweenx(self.log[0],
-                                     summation,
-                                     increase,
-                                     color = fill_color)
+                    ax.fill_betweenx(self.log[0], summation,
+                                        increase, color = fill_color)
 
                     summation = increase
 
@@ -422,12 +411,10 @@ class LogViewer(object):
                     if 'curve_name' in curve.attrib:
                         curve_name = curve.attrib['curve_name']
                     else:
-                        raise ValueError('Curve Name required in \
-                                   template at %s' % template_xml_path)
+                        raise ValueError(f'Curve Name required in template at {template_xml_path}')
 
                     if curve_name not in self.log.keys():
-                        raise ValueError('Curve %s not found in log.' \
-                                         % curve_name)
+                        raise ValueError(f'Curve {curve_name} not found in log.')
 
                     ### style and scale ###
 
@@ -441,16 +428,12 @@ class LogViewer(object):
                         right_label = curve.attrib['right'] + ' '
 
                     if left is None:
-                        print('Adjust template at %s.' % \
-                              template_xml_path)
-                        raise ValueError('Left X axis not found for \
-                                          curve %s.' % curve_name)
+                        print(f'Adjust template at {template_xml_path}.')
+                        raise ValueError(f'Left X axis not found for curve {curve_name}.')
                     if right is None:
-                        print('Adjust template at %s.' \
-                              % template_xml_path)
+                        print(f'Adjust template at {template_xml_path}.')
 
-                        raise ValueError('Right X axis not found for \
-                                         curve %s.' % curve_name)
+                        raise ValueError(f'Right X axis not found for curve {curve_name}.')
 
                     line_style = '-'
                     color = '#000000'
@@ -479,14 +462,12 @@ class LogViewer(object):
                         b = None
 
                         if 'left_color_value' in curve.attrib:
-                            left_color_value = \
-                                float(curve.attrib['left_color_value'])
+                            left_color_value = float(curve.attrib['left_color_value'])
                         else:
                             left_color_value = left
 
                         if 'right_color_value' in curve.attrib:
-                            right_color_value = \
-                               float(curve.attrib['right_color_value'])
+                            right_color_value = float(curve.attrib['right_color_value'])
                         else:
                             right_color_value = right
 
@@ -499,15 +480,13 @@ class LogViewer(object):
                         right = 1
 
                         if 'left_color_value' in curve.attrib:
-                            left_color_value = \
-                                float(curve.attrib['left_color_value'])
+                            left_color_value = float(curve.attrib['left_color_value'])
                             left_color_value = m * left_color_value + b
                         else:
                             left_color_value = left
 
                         if 'right_color_value' in curve.attrib:
-                            right_color_value = \
-                               float(curve.attrib['right_color_value'])
+                            right_color_value = float(curve.attrib['right_color_value'])
                             right_color_value=m * right_color_value + b
                         else:
                             right_color_value = right
@@ -553,16 +532,13 @@ class LogViewer(object):
                             elif curve.attrib['fill'] == 'right':
                                 baseline = right
 
-                            ax.fill_betweenx(self.log[0],
-                                             baseline,
-                                             x,
-                                             color = fill_color)
+                            ax.fill_betweenx(self.log[0], baseline,
+                                                x,color = fill_color)
 
                         elif 'fill_color_map' in curve.attrib:
                             cmap_name = curve.attrib['fill_color_map']
 
-                            span = \
-                              abs(left_color_value - right_color_value)
+                            span = abs(left_color_value - right_color_value)
 
                             cmap = plt.get_cmap(cmap_name)
 
@@ -570,45 +546,40 @@ class LogViewer(object):
                                 color_index = np.unique(x)
                             else:
                                 color_index=np.arange(left_color_value,\
-                                                     right_color_value,\
-                                                     span / 50.0)
+                                                    right_color_value, span / 50.0)
 
                             if curve.attrib['fill'] == 'left':
-                                baseline = np.ones(len(x)) * \
-                                           min(left_color_value, left)
+                                baseline = np.ones(len(x)) * min(left_color_value, left)
 
                             elif curve.attrib['fill'] == 'right':
-                                baseline = np.ones(len(x)) * \
-                                          max(right_color_value, right)
+                                baseline = np.ones(len(x)) * max(right_color_value, right)
 
                             for ci in sorted(color_index):
                                 ci_value = (ci - left_color_value)/span
                                 color = cmap(ci_value)
                                 ax.fill_betweenx(self.log[0],
-                                                 baseline,
-                                                 x,
-                                                 where = x >= ci,
-                                                 color = color)
+                                                    baseline,
+                                                    x,
+                                                    where = x >= ci,
+                                                    color = color)
 
                     if 'right_cutoff_fill' in curve.attrib:
 
                         fill_color = '#000000'
                         if 'right_cutoff_fill_color' in curve.attrib:
-                            fill_color = \
-                                curve.attrib['right_cutoff_fill_color']
+                            fill_color = curve.attrib['right_cutoff_fill_color']
 
-                        cutoff_value = \
-                               float(curve.attrib['right_cutoff_fill'])
+                        cutoff_value = float(curve.attrib['right_cutoff_fill'])
 
                         if scale != 'log':
                             v = m * cutoff_value + b
                         else:
                             v = cutoff_value
                         ax.fill_betweenx(self.log[0],
-                                         v,
-                                         x,
-                                         color = fill_color,
-                                         where = v < x)
+                                        v,
+                                        x,
+                                        color = fill_color,
+                                        where = v < x)
                         ax.plot(v * np.ones(len(self.log[0][v < x])),
                                 self.log[0][v < x], c = "#000000",
                                 lw = 0.5)
@@ -617,21 +588,19 @@ class LogViewer(object):
 
                         fill_color = '#000000'
                         if 'left_cutoff_fill_color' in curve.attrib:
-                            fill_color = \
-                                 curve.attrib['left_cutoff_fill_color']
+                            fill_color = curve.attrib['left_cutoff_fill_color']
 
-                        cutoff_value = \
-                                float(curve.attrib['left_cutoff_fill'])
+                        cutoff_value = float(curve.attrib['left_cutoff_fill'])
 
                         if scale != 'log':
                             v = m * cutoff_value + b
                         else:
                             v = cutoff_value
                         ax.fill_betweenx(self.log[0],
-                                         v,
-                                         x,
-                                         color = fill_color,
-                                         where = x < v)
+                                        v,
+                                        x,
+                                        color = fill_color,
+                                        where = x < v)
 
                         ax.plot(v * np.ones(len(self.log[0][x < v])),
                                 self.log[0][x < v], c = "#000000",
@@ -641,29 +610,23 @@ class LogViewer(object):
 
                         fill_color = '#000000'
                         if 'left_crossover_fill_color' in curve.attrib:
-                            fill_color = \
-                              curve.attrib['left_crossover_fill_color']
+                            fill_color = curve.attrib['left_crossover_fill_color']
 
                         left_curve = curve.attrib['left_crossover']
                         if left_curve not in self.log.keys():
-                            raise ValueError('Curve %s not found in \
-                                             log.' % left_curve)
+                            raise ValueError('Curve %s not found in log.' % left_curve)
 
                         if 'left_crossover_left' not in curve.attrib \
-                        and 'left_crossover_right' not in curve.attrib:
-                           raise ValueError('left and right crossover \
-                                     values not found in template %s' \
-                                     % template_xml_path)
+                            and 'left_crossover_right' not in curve.attrib:
+                                raise ValueError(f'left and right crossover \
+                                        values not found in template {template_xml_path}')
 
-                        left_crossover_left = \
-                             float(curve.attrib['left_crossover_left'])
+                        left_crossover_left = float(curve.attrib['left_crossover_left'])
 
-                        left_crossover_right = \
-                            float(curve.attrib['left_crossover_right'])
+                        left_crossover_right = float(curve.attrib['left_crossover_right'])
 
                         if scale != 'log':
-                            m = (1 - 0) / (left_crossover_right - \
-                                                   left_crossover_left)
+                            m = (1 - 0) / (left_crossover_right - left_crossover_left)
 
                             b = -m * left_crossover_left
                             v = m * self.log[left_curve] + b
@@ -671,66 +634,59 @@ class LogViewer(object):
                             v = self.log[left_curve]
 
                         ax.fill_betweenx(self.log[0],
-                                         x,
-                                         v,
-                                         color = fill_color,
-                                         where = v < x)
+                                            x,
+                                            v,
+                                            color = fill_color,
+                                            where = v < x)
 
                     if 'right_crossover' in curve.attrib:
-
                         fill_color = '#000000'
                         if 'right_crossover_fill_color' in curve.attrib:
-                            fill_color = \
-                             curve.attrib['right_crossover_fill_color']
+                            fill_color = curve.attrib['right_crossover_fill_color']
 
                         left_curve = curve.attrib['right_crossover']
                         if left_curve not in self.log.keys():
-                            raise ValueError('Curve %s not found in \
-                                                    log.' % left_curve)
+                            raise ValueError(f'Curve {left_curve} not found in log.')
 
                         if 'right_crossover_left' not in curve.attrib \
                         and 'right_crossover_right' not in curve.attrib:
-                           raise ValueError('left and right crossover \
-                                     values not found in template %s' \
-                                     % template_xml_path)
+                            raise ValueError(f'left and right crossover \
+                                        values not found in template {template_xml_path}')
 
-                        left_crossover_left = \
-                            float(curve.attrib['right_crossover_left'])
+                        left_crossover_left = float(curve.attrib['right_crossover_left'])
 
-                        left_crossover_right = \
-                           float(curve.attrib['right_crossover_right'])
+                        left_crossover_right = float(curve.attrib['right_crossover_right'])
 
                         if scale != 'log':
-                            m = (1 - 0) / (left_crossover_right - \
-                                                   left_crossover_left)
+                            m = (1 - 0) / (left_crossover_right -left_crossover_left)
                             b = -m * left_crossover_left
                             v = m * self.log[left_curve] + b
                         else:
                             v = self.log[left_curve]
 
                         ax.fill_betweenx(self.log[0],
-                                         x,
-                                         v,
-                                         color = fill_color,
-                                         where = v > x)
+                                            x,
+                                            v,
+                                            color = fill_color,
+                                            where = v > x)
 
                     curve_line = ax.plot(x,
-                                 self.log[0],
-                                 c = color,
-                                 lw = width,
-                                 ls = line_style,
-                                 marker = marker,
-                                 ms = marker_size)[0]
+                                    self.log[0],
+                                    c = color,
+                                    lw = width,
+                                    ls = line_style,
+                                    marker = marker,
+                                    ms = marker_size,
+                                    picker=self.pick_tolerance,
+                                    label=curve_name)[0]
 
-                    self._edit_curve_lines[curve_name] = \
-                                                     (curve_line, m, b)
+                    self.edit_curve_lines[curve_name] = (curve_line, m, b)
 
                 if scale == 'log':
                     ax.xaxis.grid(True, which = 'both',color='#e0e0e0')
 
                 elif 'major_lines' in track.attrib:
-                    num_major_lines = \
-                                   int(track.attrib['major_lines']) + 1
+                    num_major_lines = int(track.attrib['major_lines']) + 1
 
                     dist = abs(left - right) / num_major_lines
                     major_lines = np.arange(left + dist, right, dist)
@@ -749,20 +705,18 @@ class LogViewer(object):
         track_widths = track_widths / np.sum(track_widths)
         track_locations = [0]
         for t in range(1, len(track_widths)):
-            track_locations.append(track_locations[t - 1] + \
-                                                    track_widths[t - 1])
+            track_locations.append(track_locations[t - 1] + track_widths[t - 1])
 
         for a, ax in enumerate(self.axes):
             post = ax.get_position()
-            new_post = (track_locations[a], 0.01, track_widths[a],
-                        post.height)
+            new_post = (track_locations[a], 0.01, track_widths[a], post.height)
             ax.set_position(new_post)
             if ticks is not None:
                 ax.set_yticks(lines, minor = False)
                 ax.set_yticks(ticks, minor = True)
                 ax.tick_params(axis = 'y', direction = 'inout',
-                               length = 6, width = 1,
-                               colors = '#000000', which = 'minor')
+                                length = 6, width = 1,
+                                colors = '#000000', which = 'minor')
                 if a not in depth_track_numbers:
                     ax.yaxis.grid(True, which = 'major')
             else:
@@ -808,59 +762,109 @@ class LogViewer(object):
 
         """
 
+        log_window_title = 'Log Viewer'
         if len(str(self.log.well['UWI'].value)) > 0:
-            log_window_title = 'UWI: ' + str(self.log.well['UWI'].value)
+            log_window_title = f"UWI: {self.log.well['UWI'].value}"
         elif len(self.log.well['API'].value) > 0:
-            log_window_title = 'API: ' + str(self.log.well['API'].value)
-        else:
-            log_window_title = 'Log Viewer'
-        self.fig.canvas.set_window_title(log_window_title)
+            log_window_title = f"API: {self.log.well['API'].value}"
+
+        self.fig.canvas.manager.set_window_title(log_window_title)
         # add edit tools
         tm = self.fig.canvas.manager.toolmanager
+        # Add the custom tools that we created
         tm.add_tool('Curve Edit', _CurveEditToggle)
-        t = tm.get_tool('Curve Edit')
-        self.fig.canvas.manager.toolbar.add_tool(t, 'PetroPy')
+        self.fig.canvas.manager.toolbar.add_tool(tm.get_tool('Curve Edit'), 'PetroPy')
 
-        tm = self.fig.canvas.manager.toolmanager
         tm.add_tool('Bulk Shift', _BulkShiftToggle)
-        t = tm.get_tool('Bulk Shift')
-        self.fig.canvas.manager.toolbar.add_tool(t, 'PetroPy')
+        self.fig.canvas.manager.toolbar.add_tool(tm.get_tool('Bulk Shift'), 'PetroPy')
 
         # remove non-useful tools
         self.fig.canvas.manager.toolmanager.remove_tool('forward')
         self.fig.canvas.manager.toolmanager.remove_tool('back')
         self.fig.canvas.manager.toolmanager.remove_tool('help')
 
-        self.fig.canvas.mpl_connect('pick_event', self._curve_pick)
-        self.fig.canvas.mpl_connect('button_press_event',
-                                    self._edit_lock_toggle)
-        self.fig.canvas.mpl_connect('button_release_event',
-                                    self._edit_lock_toggle)
-        self.fig.canvas.mpl_connect('motion_notify_event',
-                                    self._draw_curve)
+        # self.fig.canvas.callbacks.connect('pick_event', self.on_pick)
+        self.fig.canvas.callbacks.connect('pick_event', self._curve_pick)
+        self.fig.canvas.callbacks.connect('button_press_event', self._edit_lock_toggle)
+        self.fig.canvas.callbacks.connect('button_release_event', self._edit_lock_toggle)
+        self.fig.canvas.callbacks.connect('motion_notify_event', self._draw_curve)
+
+        self.fig.canvas.callbacks.connect('scroll_event', self.scroll_zoom)
         plt.show()
+
+    _ZoomInfo = namedtuple("_ZoomInfo", "direction start_xy axes cid cbar")
+
+    def scroll_zoom(self, event):
+        print("scroll ZOOM", event, event.xdata, event.ydata)
+        base_scale = 1.5
+
+        axes = self.fig.canvas.figure.get_axes()
+
+        # push the current view to define home if stack is empty
+        # toolbar = self.fig.canvas.manager.toolbar # only set the home state
+        # if toolbar._views.empty():
+        #     toolbar.push_current()
+
+        # get the current x and y limits
+        cur_xlim = axes[0].get_xlim()
+        cur_ylim = axes[0].get_ylim()
+        xdata = event.xdata # get event x location
+        ydata = event.ydata # get event y location
+
+        # hat tip to @giadang
+        # Get distance from the cursor to the edge of the figure frame
+        x_left = xdata - cur_xlim[0]
+        x_right = cur_xlim[1] - xdata
+        y_top = ydata - cur_ylim[0]
+        y_bottom = cur_ylim[1] - ydata
+        if event.button == 'up': # deal with zoom in
+            scale_factor = 1/base_scale
+        elif event.button == 'down': # deal with zoom out
+            scale_factor = base_scale
+        else: # deal with something that should never happen
+            scale_factor = 1
+            # print(event.button)
+        # set new limits
+        axes[0].set_xlim([xdata - x_left*scale_factor,
+                    xdata + x_right*scale_factor])
+        axes[0].set_ylim([ydata - y_top*scale_factor,
+                    ydata + y_bottom*scale_factor])
+
+        # push the current view limits and position onto the stack
+        # REVIEW perhaps this should participate in a drag_zoom like
+        # matplotlib/backend_bases.py:NavigationToolbar2:drag_zoom()
+
+        self.fig.canvas.draw() # force re-draw
+
+    def on_pick(self, event):
+        xmouse, ymouse = event.mouseevent.xdata, event.mouseevent.ydata
+        x, y = event.artist.get_xdata(), event.artist.get_ydata()
+        ind = event.ind
+
+        print('Artist picked:', event.artist)
+        print(f'{len(ind)} vertices picked')
+        print(f'Pick between vertices {min(ind)} and {max(ind)+1}')
+        print(f'x, y of mouse: {xmouse:.2f},{ymouse:.2f}')
+        print('Data point:', x[ind[0]], y[ind[0]])
+        print()
 
 
     def _curve_pick(self, event):
         """
         Event handler for selecting a curve to edit. Results in
-        self._edit_curve being set to matplotlib text object. Connected
+        self.edit_curve being set to matplotlib text object. Connected
         on line 852 with 'pick_event'.
         """
- 
-        if self._edit_curve is not None:
-            self._edit_curve.set_bbox({'facecolor': 'white',
-                                       'edgecolor': 'white',
-                                       'alpha': 0})
 
-        self._edit_curve = event.artist
-        draw= self.fig.canvas.manager.toolmanager.get_tool('Curve Edit')
-        bulk= self.fig.canvas.manager.toolmanager.get_tool('Bulk Shift')
+        if self.edit_curve is not None:
+            self.edit_curve.axes.set_facecolor('white')
+
+        self.edit_curve = event.artist
+        draw = self.fig.canvas.manager.toolmanager.get_tool('Curve Edit')
+        bulk = self.fig.canvas.manager.toolmanager.get_tool('Bulk Shift')
 
         if draw.toggled or bulk.toggled:
-            self._edit_curve.set_bbox({'facecolor': 'khaki',
-                                       'edgecolor': 'khaki',
-                                       'alpha': 1})
+            self.edit_curve.axes.set_facecolor('khaki')
 
         self.fig.canvas.draw()
 
@@ -869,71 +873,67 @@ class LogViewer(object):
         """
         Event handler to check for correct axis associated with
         selected curve. Will allow _draw_curve to function if click is
-        in proper axis based on the self._edit_curve property set with
+        in proper axis based on the self.edit_curve property set with
         _curve_pick. Connected on lines 853 and 855 to
         :code:`button_press_event` and :code:`button_release_event`.
         """
 
-        if self._edit_curve and hasattr(event, 'inaxes'):
+        if self.edit_curve and hasattr(event, 'inaxes'):
             if event.inaxes:
                 ax_num = np.where(self.axes == event.inaxes)[0]
                 if len(ax_num) > 0:
-                    curve_num = \
-                         np.where(self.axes == self._edit_curve.axes)[0]
+                    curve_num = np.where(self.axes == self.edit_curve.axes)[0]
                     if ax_num == curve_num:
                         self._edit_lock = not self._edit_lock
-
 
     def _draw_curve(self, event):
         """
         Event handler for changing data in the figure and in the log
         object. Connected on line 857 with :code:`motion_notify_event`.
         """
+        draw = self.fig.canvas.manager.toolmanager.get_tool('Curve Edit')
+        bulk = self.fig.canvas.manager.toolmanager.get_tool('Bulk Shift')
+        # print("_draw_curve EV", event.xdata, event.ydata, event.button, self._edit_lock)
 
-        draw= self.fig.canvas.manager.toolmanager.get_tool('Curve Edit')
-        bulk= self.fig.canvas.manager.toolmanager.get_tool('Bulk Shift')
+        x, y = event.xdata, event.ydata
 
-        if draw.toggled and self._edit_lock:
-            x, y = event.xdata, event.ydata
-
-            curve_name = \
-           self._display_name_to_curve_name[self._edit_curve.get_text()]
-
+        if self._edit_lock:
+            curve_name = self.edit_curve._label
+            line, m, b = self.edit_curve_lines[curve_name]
             cursor_depth_index = np.argmin(np.abs(self.log[0] - y))
-            line, m, b = self._edit_curve_lines[curve_name]
 
             x_data = line.get_xdata()
-            x_data[cursor_depth_index] = x
-            line.set_xdata(x_data)
 
-            if m is not None and b is not None:
-                x = (x - b) / m
+            if draw.toggled:
+                if event.button == 1 and event.button == self.prev_mouse_event.button:
+                    x_prev, y_prev = self.prev_mouse_event.xdata, self.prev_mouse_event.ydata
+                    cursor_depth_index_prev = np.argmin(np.abs(self.log[0] - y_prev))
+                    dindex_range = np.arange(cursor_depth_index_prev, cursor_depth_index, 1)
+                    x_interp = np.interp(dindex_range, [cursor_depth_index_prev, cursor_depth_index], [x_prev, x])
+                    x_data[cursor_depth_index_prev:cursor_depth_index] = x_interp
+                    # print("DRAGGING", x, y, x_prev, y_prev, cursor_depth_index, cursor_depth_index_prev, x_interp)
+                else:
+                    x_data[cursor_depth_index] = x
+                line.set_xdata(x_data)
 
-            self.log[curve_name][cursor_depth_index] =  x
+                if m is not None and b is not None:
+                    x = (x - b) / m
+
+                self.log[curve_name][cursor_depth_index] =  x
+
+            elif bulk.toggled:
+                x_diff = x_data[cursor_depth_index] - x
+                x_data = x_data - x_diff
+                line.set_xdata(x_data)
+
+                if m is not None and b is not None:
+                    x_data = (x_data - b) / m
+
+                self.log[curve_name][:] = x_data
 
             self.fig.canvas.draw()
 
-        elif bulk.toggled and self._edit_lock:
-            x, y = event.xdata, event.ydata
-
-            curve_name = \
-           self._display_name_to_curve_name[self._edit_curve.get_text()]
-
-            cursor_depth_index = np.argmin(np.abs(self.log[0] - y))
-
-            line, m, b = self._edit_curve_lines[curve_name]
-
-            x_data = line.get_xdata()
-            x_diff = x_data[cursor_depth_index] - x
-            x_data = x_data - x_diff
-            line.set_xdata(x_data)
-
-            if m is not None and b is not None:
-                x_data = (x_data - b) / m
-
-            self.log[curve_name][:] = x_data
-
-            self.fig.canvas.draw()
+        self.prev_mouse_event = event
 
 
 class _CurveEditToggle(ToolToggleBase):
@@ -945,31 +945,29 @@ class _CurveEditToggle(ToolToggleBase):
     description = 'Curve Draw Edit'
     radio_group = 'PetroPy'
 
-    file_dir = os.path.dirname(__file__)
-    image = os.path.join(file_dir, 'data', 'images', 'draw.png')
+    image = os.path.join(os.path.dirname(__file__), 'data', 'images', 'draw.png')
 
-    def enable(self, event):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def enable(self, event=None):
         """
         Color previously selected curve to khaki when editing
         """
         for obj in gc.get_objects():
             if isinstance(obj, LogViewer):
-                if obj._edit_curve is not None:
-                    obj._edit_curve.set_bbox({'facecolor': 'khaki',
-                                              'edgecolor': 'khaki',
-                                              'alpha': 1})
+                if obj.edit_curve is not None:
+                    obj.edit_curve.axes.set_facecolor('khaki')
                     obj.fig.canvas.draw()
 
-    def disable(self, event):
+    def disable(self, event=None):
         """
         Color previously selected curve to white when not editing
         """
         for obj in gc.get_objects():
             if isinstance(obj, LogViewer):
-                if obj._edit_curve is not None:
-                    obj._edit_curve.set_bbox({'facecolor': 'white',
-                                              'edgecolor': 'white',
-                                              'alpha': 0})
+                if obj.edit_curve is not None:
+                    obj.edit_curve.axes.set_facecolor('white')
                     obj.fig.canvas.draw()
 
 
@@ -991,10 +989,8 @@ class _BulkShiftToggle(ToolToggleBase):
         """
         for obj in gc.get_objects():
             if isinstance(obj, LogViewer):
-                if obj._edit_curve is not None:
-                    obj._edit_curve.set_bbox({'facecolor': 'khaki',
-                                              'edgecolor': 'khaki',
-                                              'alpha': 1})
+                if obj.edit_curve is not None:
+                    obj.edit_curve.axes.set_facecolor('khaki')
                     obj.fig.canvas.draw()
 
     def disable(self, event):
@@ -1003,10 +999,8 @@ class _BulkShiftToggle(ToolToggleBase):
         """
         for obj in gc.get_objects():
             if isinstance(obj, LogViewer):
-                if obj._edit_curve is not None:
-                    obj._edit_curve.set_bbox({'facecolor': 'white',
-                                              'edgecolor': 'white',
-                                              'alpha': 0})
+                if obj.edit_curve is not None:
+                    obj.edit_curve.axes.set_facecolor('white')
                     obj.fig.canvas.draw()
 
 
@@ -1021,6 +1015,5 @@ class _PetroPyAxes(mpl.axes.Axes):
     def drag_pan(self, button, key, x, y):
         # pretend key=='y'
         mpl.axes.Axes.drag_pan(self, button, 'y', x, y)
-
 
 mpl.projections.register_projection(_PetroPyAxes)

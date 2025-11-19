@@ -56,7 +56,6 @@ class Log(LASFile):
         self.multimineral_parameters_from_csv()
         self.tops = {}
 
-
     def precondition(self, drho_matrix = 2.71):
         """
         Preconditions log curve by aliasing names.
@@ -80,14 +79,12 @@ class Log(LASFile):
         """
 
         file_dir = os.path.dirname(__file__)
-        ALIAS_XML_PATH = os.path.join(file_dir, 'data',
-                                      'curve_alias.xml')
+        ALIAS_XML_PATH = os.path.join(file_dir, 'data', 'curve_alias.xml')
 
         if not os.path.isfile(ALIAS_XML_PATH):
-            raise ValueError('Could not find alias xml at: %s' % \
-                             ALIAS_XML_PATH)
+            raise ValueError(f"Could not find alias xml at: {ALIAS_XML_PATH}")
 
-        with open(ALIAS_XML_PATH, 'r') as f:
+        with open(ALIAS_XML_PATH, 'r', encoding='utf-8') as f:
             root = ET.fromstring(f.read())
 
         for alias in root:
@@ -108,11 +105,8 @@ class Log(LASFile):
             calculated_rho[non_null_depth_index] = \
                       drho_matrix - (drho_matrix - 1) * non_null_depths
 
-            self.add_curve('RHOB_N', calculated_rho, unit = 'g/cc',
-                       value = '',
-                       descr = 'Calculated bulk density from density \
-                               porosity assuming rho matrix = %.2f' % \
-                               drho_matrix)
+            self.add_curve('RHOB_N', calculated_rho, unit = 'g/cc', value = '',
+                            descr = f"Calculated bulk density from density porosity assuming rho matrix = {drho_matrix:.2f}")
 
     def tops_from_csv(self, csv_path = None):
         """
@@ -169,7 +163,7 @@ class Log(LASFile):
         top_df = pd.read_csv(csv_path, dtype = {'uwi': str,'form': str,
                                                 'depth': float})
 
-        well_tops_df =top_df[top_df.uwi == str(self.well['UWI'].value)]
+        well_tops_df = top_df[top_df.uwi == str(self.well['UWI'].value)]
         for _, row in well_tops_df.iterrows():
             self.tops[row.form] = row.depth
 
@@ -329,15 +323,14 @@ class Log(LASFile):
         param_df = pd.read_csv(csv_path)
         param_df = param_df.set_index('name')
 
-        self.fluid_properties_parameters = \
-                                     param_df.to_dict(orient = 'index')
+        self.fluid_properties_parameters = param_df.to_dict(orient = 'index')
 
 
     def fluid_properties(self, top = 0, bottom = 100000, mast = 67,
-    temp_grad = 0.015, press_grad = 0.5, rws = 0.1, rwt = 70,
-    rmfs = 0.4, rmft = 100, gas_grav = 0.67, oil_api = 38, p_sep = 100,
-    t_sep = 100, yn2 = 0, yco2 = 0, yh2s = 0, yh20 = 0, rs = 0,
-    lith_grad = 1.03, biot = 0.8, pr = 0.25):
+        temp_grad = 0.015, press_grad = 0.5, rws = 0.1, rwt = 70,
+        rmfs = 0.4, rmft = 100, gas_grav = 0.67, oil_api = 38, p_sep = 100,
+        t_sep = 100, yn2 = 0, yco2 = 0, yh2s = 0, yh20 = 0, rs = 0,
+        lith_grad = 1.03, biot = 0.8, pr = 0.25):
         """
         Calculates fluid properties along wellbore.
 
@@ -387,7 +380,7 @@ class Log(LASFile):
             the top of the log.
         bottom : float (default 100,000)
             The bottom depth to end fluid properties, inclusive. If the
-            value is not specified, the calculations will go to the
+            value is not specified, the calcuations will go to the
             end of the log.
         mast : float (default 67)
             The mean annual surface temperature at the location of the
@@ -481,7 +474,7 @@ class Log(LASFile):
         ### fluid property calculations ###
 
         depth_index = np.intersect1d(np.where(self[0] >= top)[0],
-                                     np.where(self[0] < bottom)[0])
+                                    np.where(self[0] < bottom)[0])
         depths = self[0][depth_index]
 
         form_temp = mast + temp_grad * depths
@@ -548,8 +541,7 @@ class Log(LASFile):
         if oil_api == 0:
             # hydrocarbon garvity only
             hc_grav = (gas_grav - 1.1767 * yh2s - 1.5196 * yco2 - \
-                       0.9672 * yn2 - 0.622 * yh20) / \
-                       (1.0 - yn2 - yco2 - yh20 - yh2s)
+                       0.9672 * yn2 - 0.622 * yh20) / (1.0 - yn2 - yco2 - yh20 - yh2s)
 
             # pseudocritical properties of hydrocarbon
             ppc_h = 756.8 - 131.0 * hc_grav - 3.6 * (hc_grav ** 2)
@@ -579,18 +571,15 @@ class Log(LASFile):
             if yn2 > 0 or yh20 > 0:
                 tpc_cor = -246.1 * yn2 + 400 * yh20
                 ppc_cor = -162.0 * yn2 + 1270.0 * yh20
-                tpc = (tpc - 227.2 * yn2 - 1165.0 * yh20) / \
-                      (1.0 - yn2 - yh20) + tpc_cor
+                tpc = (tpc - 227.2 * yn2 - 1165.0 * yh20) / (1.0 - yn2 - yh20) + tpc_cor
 
-                ppc = (ppc - 493.1 * yn2 - 3200.0 * yh20) / \
-                      (1.0 - yn2 - yh20) + ppc_cor
+                ppc = (ppc - 493.1 * yn2 - 3200.0 * yh20) / (1.0 - yn2 - yh20) + ppc_cor
 
             # Reduced pseudocritical properties
             tpr = (form_temp + 459.67) / tpc
             ppr = pore_press / ppc
 
-            ### z factor from Dranchuk and Abou-Kassem fit of ###
-            ### Standing and Katz chart ###
+            ### z factor from Dranchuk and Abou-Kassem fit of Standing and Katz chart
             a = [0.3265,
                 -1.07,
                 -0.5339,
@@ -801,7 +790,7 @@ class Log(LASFile):
                 'descr': 'Calculated Oil Formation Volume Factor'},
 
                 {'mnemoic': 'BP', 'data': bp, 'unit': 'psi',
-                'descr': 'Calcualted Bubble Point'}
+                'descr': 'Calculated Bubble Point'}
             ]
 
             for curve in oil_curves:
@@ -1057,26 +1046,26 @@ class Log(LASFile):
 
 
     def multimineral_model(self, top = None, bottom = None,
-    gr_matrix = 10, nphi_matrix = 0, gr_clay = 350, rho_clay = 2.64,
-    nphi_clay = 0.65, pe_clay = 4, rma = 180, rt_clay = 80,
-    vclay_linear_weight = 1, vclay_clavier_weight = 0.5,
-    vclay_larionov_weight = 0.5, vclay_nphi_weight = 1,
-    vclay_nphi_rhob_weight = 1, vclay_cutoff = 0.1, rho_om = 1.15,
-    nphi_om = 0.6, pe_om = 0.2, ro = 1.6, lang_press = 670,
-    passey_nphi_weight = 1, passey_rhob_weight = 1, passey_lom = 10,
-    passey_baseline_res = 40, passey_baseline_rhob = 2.65,
-    passey_baseline_nphi = 0, schmoker_weight = 1,
-    schmoker_slope =  0.7257, schmoker_baseline_rhob = 2.6,
-    rho_pyr = 5, nphi_pyr = 0.13, pe_pyr = 13, om_pyrite_slope = 0.2,
-    include_qtz = 'YES', rho_qtz = 2.65, nphi_qtz = -0.04,
-    pe_qtz = 1.81, include_clc = 'YES', rho_clc = 1.71, nphi_clc = 0,
-    pe_clc = 5.08, include_dol = 'YES', rho_dol = 2.85,
-    nphi_dol = 0.04, pe_dol = 3.14, include_x = 'NO',
-    name_x = 'Gypsum', name_log_x = 'GYP', rho_x = 2.35,
-    nphi_x = 0.507, pe_x = 4.04, pe_fl = 0, m = 2, n = 2, a = 1,
-    archie_weight = 0, indonesia_weight = 1, simandoux_weight = 0,
-    modified_simandoux_weight = 0, waxman_smits_weight = 0, cec = -1,
-    buckles_parameter = -1):
+        gr_matrix = 10, nphi_matrix = 0, gr_clay = 350, rho_clay = 2.64,
+        nphi_clay = 0.65, pe_clay = 4, rma = 180, rt_clay = 80,
+        vclay_linear_weight = 1, vclay_clavier_weight = 0.5,
+        vclay_larionov_weight = 0.5, vclay_nphi_weight = 1,
+        vclay_nphi_rhob_weight = 1, vclay_cutoff = 0.1, rho_om = 1.15,
+        nphi_om = 0.6, pe_om = 0.2, ro = 1.6, lang_press = 670,
+        passey_nphi_weight = 1, passey_rhob_weight = 1, passey_lom = 10,
+        passey_baseline_res = 40, passey_baseline_rhob = 2.65,
+        passey_baseline_nphi = 0, schmoker_weight = 1,
+        schmoker_slope =  0.7257, schmoker_baseline_rhob = 2.6,
+        rho_pyr = 5, nphi_pyr = 0.13, pe_pyr = 13, om_pyrite_slope = 0.2,
+        include_qtz = 'YES', rho_qtz = 2.65, nphi_qtz = -0.04,
+        pe_qtz = 1.81, include_clc = 'YES', rho_clc = 1.71, nphi_clc = 0,
+        pe_clc = 5.08, include_dol = 'YES', rho_dol = 2.85,
+        nphi_dol = 0.04, pe_dol = 3.14, include_x = 'NO',
+        name_x = 'Gypsum', name_log_x = 'GYP', rho_x = 2.35,
+        nphi_x = 0.507, pe_x = 4.04, pe_fl = 0, m = 2, n = 2, a = 1,
+        archie_weight = 0, indonesia_weight = 1, simandoux_weight = 0,
+        modified_simandoux_weight = 0, waxman_smits_weight = 0, cec = -1,
+        buckles_parameter = -1):
         """
         Calculates a petrophysical lithology and porosity model for
         conventional and unconventional reservoirs. For each depth, the
@@ -1092,7 +1081,7 @@ class Log(LASFile):
         .. math::
 
             gr\_index &= \\frac{GR_LOG - gr\_matrix}
-                               {gr\_clay - gr_matrix}
+                                {gr\_clay - gr_matrix}
 
             VCLAY &= gr\_index
 
@@ -1558,8 +1547,7 @@ class Log(LASFile):
         ### check for requirements ###
         for curve in required_raw_curves:
             if curve not in self.keys():
-                raise ValueError('Raw curve %s not found and is \
-                             required for multimineral_model.' % curve)
+                raise ValueError(f"Raw curve {curve} not found and is required for multimineral_model.")
 
         required_curves_from_fluid_properties = ['RW', 'RHO_HC',
                                                 'RHO_W', 'NPHI_HC',
@@ -1568,16 +1556,14 @@ class Log(LASFile):
 
         for curve in required_curves_from_fluid_properties:
             if curve not in self.keys():
-                raise ValueError('Fluid Properties curve %s not found.\
-                     Run fluid_properties before multimineral_model.' \
-                     % curve)
+                raise ValueError(f"Fluid Properties curve {curve} not found.\
+                                    Run fluid_properties before multimineral_model.")
 
-        all_required_curves = required_raw_curves +\
-                              required_curves_from_fluid_properties
+        all_required_curves = required_raw_curves + required_curves_from_fluid_properties
 
         if 'BO' not in self.keys() and 'BG' not in self.keys():
             raise ValueError('Formation Volume Factor required for \
-                      multimineral_model. Run fluid_properties first.')
+                                multimineral_model. Run fluid_properties first.')
 
         if 'BO' in self.keys():
             hc_class = 'OIL'
@@ -1666,8 +1652,7 @@ class Log(LASFile):
         for curve in output_curves:
             if curve['mnemoic'] not in self.keys():
                 self.add_curve(curve['mnemoic'], curve['data'],
-                               unit = curve['unit'],
-                               descr = curve['descr'])
+                                unit = curve['unit'], descr = curve['descr'])
 
         qtz_curves = [
             {'mnemoic': 'BVQTZ', 'data': np.copy(nulls), 'unit': 'v/v',
@@ -1681,14 +1666,13 @@ class Log(LASFile):
             for curve in qtz_curves:
                 if curve['mnemoic'] not in self.keys():
                     self.add_curve(curve['mnemoic'], curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    unit = curve['unit'], descr = curve['descr'])
 
         clc_curves = [
             {'mnemoic': 'BVCLC', 'data': np.copy(nulls), 'unit': 'v/v',
             'descr': 'Bulk Volume Fraction Calcite'},
             {'mnemoic': 'VCLC', 'data': np.copy(nulls), 'unit': 'v/v',
-             'descr': 'Matrix Volume Fraction Calcite'},
+            'descr': 'Matrix Volume Fraction Calcite'},
             {'mnemoic': 'WTCLC', 'data': np.copy(nulls),'unit':'wt/wt',
             'descr': 'Matrix Weight Fraction Calcite'}
         ]
@@ -1696,8 +1680,7 @@ class Log(LASFile):
             for curve in clc_curves:
                 if curve['mnemoic'] not in self.keys():
                     self.add_curve(curve['mnemoic'], curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    unit = curve['unit'], descr = curve['descr'])
 
         dol_curves = [
             {'mnemoic': 'BVDOL', 'data': np.copy(nulls), 'unit': 'v/v',
@@ -1711,8 +1694,7 @@ class Log(LASFile):
             for curve in dol_curves:
                 if curve['mnemoic'] not in self.keys():
                     self.add_curve(curve['mnemoic'], curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    unit = curve['unit'], descr = curve['descr'])
 
         min_x_curves = [
             {'menmoic': 'V' + name_log_x, 'data': np.copy(nulls),
@@ -1726,16 +1708,14 @@ class Log(LASFile):
             for curve in min_x_curves:
                 if curve['mnemoic'] not in self.keys():
                     self.add_curve(curve['mnemoic'], curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    unit = curve['unit'], descr = curve['descr'])
 
         oil_curve = {'mnemoic': 'OIP', 'data': np.copy(nulls),
-                     'unit': 'Mmbbl / section', 'descr':'Oil in Place'}
+                    'unit': 'Mmbbl / section', 'descr':'Oil in Place'}
         if hc_class == 'OIL':
             if oil_curve['mnemoic'] not in self.keys():
                 self.add_curve(oil_curve['mnemoic'], oil_curve['data'],
-                               unit = curve['unit'],
-                               descr = curve['descr'])
+                                unit = curve['unit'], descr = curve['descr'])
 
         gas_curves = [
             {'mnemoic': 'GIP', 'data': np.copy(nulls),
@@ -1749,8 +1729,7 @@ class Log(LASFile):
             for curve in gas_curves:
                 if curve['mnemoic'] not in self.keys():
                     self.add_curve(curve['mnemoic'], curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    unit = curve['unit'], descr = curve['descr'])
 
         ### calculations over depths ###
         depth_index = np.intersect1d(np.where(self[0] >= top)[0],
@@ -1760,7 +1739,8 @@ class Log(LASFile):
             ### check for null values in data, skip if true ###
             nans = np.isnan([self[x][i] for x in all_required_curves])
             infs = np.isinf([self[x][i] for x in all_required_curves])
-            if True in nans or True in infs: continue
+            if True in nans or True in infs:
+                continue
 
             if i > 0:
                 sample_rate = abs(self[0][i] - self[0][i - 1])
@@ -1794,7 +1774,7 @@ class Log(LASFile):
 
                 ### clay solver ###
                 gr_index = np.clip((self['GR_N'][i] - gr_matrix) \
-                           / (gr_clay - gr_matrix), 0, 1)
+                            / (gr_clay - gr_matrix), 0, 1)
 
                 ### linear vclay method ###
                 vclay_linear = gr_index
@@ -1809,7 +1789,7 @@ class Log(LASFile):
 
                 # Neutron vclay method without organic correction
                 vclay_nphi = np.clip((nphia - nphi_matrix) / \
-                                     (nphi_clay - nphi_matrix), 0, 1)
+                                    (nphi_clay - nphi_matrix), 0, 1)
 
                 # Neutron Density vclay method with organic correction
                 m1 = (nphi_fl - nphi_matrix) / (rho_fl - rhom)
@@ -1817,7 +1797,7 @@ class Log(LASFile):
                 x2 = nphi_clay + m1 * (rhom - rho_clay)
                 if x2 - nphi_matrix != 0:
                     vclay_nphi_rhob = np.clip((x1 - nphi_matrix) / \
-                                              (x2 - nphi_matrix), 0, 1)
+                                            (x2 - nphi_matrix), 0, 1)
                 else:
                     vclay_nphi_rhob = 0
 
@@ -1859,7 +1839,7 @@ class Log(LASFile):
                     (schmoker_baseline_rhob - self['RHOB_N'][i]), 0, 1)
 
                     toc_weights = passey_nphi_weight + \
-                                  passey_rhob_weight + schmoker_weight
+                                passey_rhob_weight + schmoker_weight
 
                     ### toc in weight percent ###
                     toc = (passey_nphi_weight * toc_nphi + \
@@ -1909,8 +1889,7 @@ class Log(LASFile):
                                 pe_clay * bvclay + pe_pyr * bvpyr)) / \
                                 (1 - bvom - bvclay - bvpyr)
 
-                    l_clean = np.asarray([rhob_clean, nphi_clean,
-                                          pe_clean, 1])
+                    l_clean = np.asarray([rhob_clean, nphi_clean, pe_clean, 1])
 
                     l = np.asarray([self['RHOB_N'][i],
                                     self['NPHI_N'][i],
@@ -1920,26 +1899,22 @@ class Log(LASFile):
 
                     if include_qtz:
                         minerals.append('QTZ')
-                        mineral_matrix = np.asarray((rho_qtz, nphi_qtz,
-                                                     pe_qtz))
+                        mineral_matrix = np.asarray((rho_qtz, nphi_qtz, pe_qtz))
                         c_clean = np.vstack((c_clean, mineral_matrix))
 
                     if include_clc:
                         minerals.append('CLC')
-                        mineral_matrix = np.asarray((rho_clc, nphi_clc,
-                                                     pe_clc))
+                        mineral_matrix = np.asarray((rho_clc, nphi_clc, pe_clc))
                         c_clean = np.vstack((c_clean, mineral_matrix))
 
                     if include_dol:
                         minerals.append('DOL')
-                        mineral_matrix = np.asarray((rho_dol, nphi_dol,
-                                                     pe_dol))
+                        mineral_matrix = np.asarray((rho_dol, nphi_dol, pe_dol))
                         c_clean = np.vstack((c_clean, mineral_matrix))
 
                     if include_x:
                         minerals.append('X')
-                        mineral_matrix = np.asarray((rho_x, nphi_x,
-                                                     pe_x))
+                        mineral_matrix = np.asarray((rho_x, nphi_x, pe_x))
                         c_clean = np.vstack((c_clean, mineral_matrix))
 
                     fluid_matrix = np.asarray((rho_fl, nphi_fl, pe_fl))
@@ -1948,8 +1923,7 @@ class Log(LASFile):
 
                 else:
                     l_clean = np.asarray([rhob_clean, nphi_clean, 1])
-                    l = np.asarray([self['RHOB_N'][i],
-                                    self['NPHI_N'][i],1])
+                    l = np.asarray([self['RHOB_N'][i], self['NPHI_N'][i],1])
 
                     c_clean = np.asarray((0,0)) # initialize matrix C
 
@@ -1979,8 +1953,7 @@ class Log(LASFile):
 
                 c_clean = np.delete(c_clean, 0, 0)
 
-                c_clean = np.vstack((c_clean.T,
-                                     np.ones_like(c_clean.T[0])))
+                c_clean = np.vstack((c_clean.T, np.ones_like(c_clean.T[0])))
 
                 bv_clean = nnls(c_clean, l_clean.T)[0]
 
@@ -2022,7 +1995,7 @@ class Log(LASFile):
                                         (1, 1, 1)
                                     )
                                 )
-                              ))
+                            ))
                 else:
                     c = np.hstack((c_clean, np.asarray(
                                     (
@@ -2030,7 +2003,7 @@ class Log(LASFile):
                                         (nphi_om, nphi_clay, nphi_pyr),
                                         (1, 1, 1))
                                     )
-                              ))
+                            ))
 
                 bv = np.append(bv_clean, (bvom, bvclay, bvpyr))
 
@@ -2039,10 +2012,10 @@ class Log(LASFile):
                 sse = np.dot((l - l_hat).T, l - l_hat)
 
                 prev = np.asarray((bvqtz_prev, bvclc_prev, bvdol_prev,
-                                   bvx_prev, phi_prev, bvom_prev,
-                                   bvclay_prev, bvpyr_prev))
+                                    bvx_prev, phi_prev, bvom_prev,
+                                    bvclay_prev, bvpyr_prev))
                 cur = np.asarray((bvqtz, bvclc, bvdol, bvx, phie, bvom,
-                                  bvclay, bvpyr))
+                                    bvclay, bvpyr))
 
                 diff = np.abs(cur - prev).sum()
 
@@ -2069,7 +2042,7 @@ class Log(LASFile):
                 vom = bvom / per_matrix
                 vpyr = bvpyr / per_matrix
 
-        		### calculate weight fraction ###
+                ### calculate weight fraction ###
 
                 mass_qtz = vqtz * rho_qtz
                 mass_clc = vclc * rho_clc
@@ -2079,8 +2052,7 @@ class Log(LASFile):
                 mass_clay = vclay * rho_clay
                 mass_pyr = vpyr * rho_pyr
 
-                rhom = mass_qtz + mass_clc + mass_dol + mass_x + \
-                       mass_om +mass_clay + mass_pyr
+                rhom = mass_qtz + mass_clc + mass_dol + mass_x + mass_om +mass_clay + mass_pyr
 
                 wtqtz = mass_qtz / rhom
                 wtclc = mass_clc / rhom
@@ -2113,22 +2085,20 @@ class Log(LASFile):
                 c = (1.0 - vclay) * a * self['RW'][i] / (phis ** m)
                 d = c * vclay / (2.0 * rt_clay)
                 e = c / self['RESDEEP_N'][i]
-                sw_simandoux = np.clip(((d**2 + e) ** 0.2 - d) ** \
-                                                         (2 / n), 0, 1)
+                sw_simandoux = np.clip(((d**2 + e) ** 0.2 - d) ** (2 / n), 0, 1)
 
                 ### modified Simandoux ###
                 sw_mod_simd = np.clip((0.5 * self['RW'][i] / \
                                        phis ** m) * ((4 * phis **m) / \
-                             (self['RW'][i] * self['RESDEEP_N'][i]) + \
-                             (vclay / rt_clay) ** 2) ** (1 / n) - \
-                             vclay / rt_clay, 0, 1)
+                                (self['RW'][i] * self['RESDEEP_N'][i]) + \
+                                (vclay / rt_clay) ** 2) ** (1 / n) - \
+                                vclay / rt_clay, 0, 1)
 
                 ### Waxman Smits ###
                 if cec <= 0:
                     cec = 10 ** (1.9832 * vclay - 2.4473)
 
-                rw77 =self['RESDEEP_N'][i]*(self['RES_TEMP'][i] + 6.8)\
-                       / 83.8
+                rw77 =self['RESDEEP_N'][i]*(self['RES_TEMP'][i] + 6.8)/ 83.8
 
                 b = 4.6 * (1 - 0.6 * np.exp(-0.77 / rw77))
                 f = a / (phis ** m)
@@ -2141,22 +2111,20 @@ class Log(LASFile):
 
                 ### weighted calculation with bv output ###
                 weight_saturations = archie_weight + indonesia_weight+\
-                       simandoux_weight + modified_simandoux_weight + \
-                       waxman_smits_weight
+                        simandoux_weight + modified_simandoux_weight + \
+                        waxman_smits_weight
 
                 sw = (archie_weight * sw_archie + \
                       indonesia_weight * sw_indonesia + \
                       simandoux_weight * sw_simandoux + \
                       modified_simandoux_weight * sw_mod_simd + \
-                      waxman_smits_weight * sw_waxman_smits) / \
-                      weight_saturations
+                      waxman_smits_weight * sw_waxman_smits) / weight_saturations
 
                 bvw = phie * sw
                 bvh = phie * (1 - sw)
 
                 if hc_class == 'OIL':
-                    oip =(7758 * 640 * sample_rate * bvh * 10 ** -6)/ \
-                           self['BO'][i] # Mmbbl per sample rate
+                    oip =(7758 * 640 * sample_rate * bvh * 10 ** -6)/ self['BO'][i] # Mmbbl per sample rate
 
                 elif hc_class == 'GAS':
                     langslope = (-0.08 * self['RES_TEMP'][i] + \
@@ -2251,23 +2219,18 @@ class Log(LASFile):
         ### since parameters depend on calculated values ###
 
         if buckles_parameter < 0:
-            buckles_parameter=np.mean(self['PHIE'][depth_index] * \
-                                      self['SW'][depth_index])
+            buckles_parameter=np.mean(self['PHIE'][depth_index] * self['SW'][depth_index])
 
-            ir_denom = (self['PHIE'][depth_index] / \
-                       (1 - self['VCLAY'][depth_index]))
+            ir_denom = self['PHIE'][depth_index] / (1 - self['VCLAY'][depth_index])
             ir_denom[np.where(ir_denom < 0.001)[0]] = 0.001
             sw_irr = buckles_parameter / ir_denom
 
-            self['BVWI'][depth_index] = \
-                              self['PHIE'][depth_index] * sw_irr
+            self['BVWI'][depth_index] = self['PHIE'][depth_index] * sw_irr
 
-            self['BVWF'][depth_index] = self['BVW'][depth_index] - \
-                                        self['BVWI'][depth_index]
+            self['BVWF'][depth_index] = self['BVW'][depth_index] - self['BVWI'][depth_index]
 
 
-    def formation_multimineral_model(self, formations,
-                                     parameter = 'default'):
+    def formation_multimineral_model(self, formations, parameter = 'default'):
         """
         Calculate multimineral model over formations with loaded
         paramters
@@ -2316,9 +2279,9 @@ class Log(LASFile):
 
 
     def add_pay_flag(self, formations = [], flag = 1,
-                     less_than_or_equal = [],
-                     greater_than_or_equal = [],
-                     name = '', descr = 'Pay Flag'):
+                    less_than_or_equal = [],
+                    greater_than_or_equal = [],
+                    name = '', descr = 'Pay Flag'):
         """
         Add Pay Flag based on curve cutoffs
 
@@ -2376,16 +2339,13 @@ class Log(LASFile):
 
             cutoffs = np.where(self[0] >= top)[0]
 
-            cutoffs = np.intersect1d(cutoffs,
-                                     np.where(self[0] <= bottom)[0])
+            cutoffs = np.intersect1d(cutoffs, np.where(self[0] <= bottom)[0])
 
             for curve, value in less_than_or_equal:
-                cutoffs = np.intersect1d(cutoffs,
-                                     np.where(self[curve] <= value)[0])
+                cutoffs = np.intersect1d(cutoffs, np.where(self[curve] <= value)[0])
 
             for curve, value in greater_than_or_equal:
-                cutoffs = np.intersect1d(cutoffs,
-                                     np.where(self[curve] >= value)[0])
+                cutoffs = np.intersect1d(cutoffs, np.where(self[curve] >= value)[0])
 
             self[name][cutoffs] = flag
 
@@ -2437,14 +2397,14 @@ class Log(LASFile):
                 nulls[:] = np.nan
                 curve = self.get_curve(c)
                 self.add_curve(c + '_SUM',nulls,unit=curve.unit +' ft',
-                               descr = curve.descr + ' Summation')
+                                descr = curve.descr + ' Summation')
 
         for f in formations:
             top = self.tops[f]
             bottom = self.next_formation_depth(f)
 
             depth_index = np.intersect1d(np.where(self[0] >= top)[0],
-                                         np.where(self[0] < bottom)[0])
+                                        np.where(self[0] < bottom)[0])
             for c in curves:
 
                 ### include sample rate in summation for ###
@@ -2459,8 +2419,7 @@ class Log(LASFile):
                                             series[::-1].cumsum()[::-1]
 
 
-    def statistics(self, formations, curves = ['PHIE'], pay_flags = [],
-                   facies = []):
+    def statistics(self, formations, curves = ['PHIE'], pay_flags = [], facies = []):
         """
         Statistics for curves and facies over every formation with
         for every pay flag in each formation.
@@ -2534,15 +2493,13 @@ class Log(LASFile):
 
             top = self.tops[f]
             bottom = self.next_formation_depth(f)
-            formation_data = {'DATETIME': dt.datetime.now(),
-                              'GROSS_H': bottom - top}
+            formation_data = {'DATETIME': dt.datetime.now(), 'GROSS_H': bottom - top}
 
             depth_index = (self[0] >= top) & (self[0] < bottom)
 
             for curve in curves:
                 if curve not in self.keys():
-                    raise ValueError('Curve %s not in log curves.' \
-                                     % curve)
+                    raise ValueError(f"Curve {curve} not in log curves.")
 
                 curve_rows = depth_index & ~np.isnan(self[curve]) & \
                                             np.isfinite(self[curve])
@@ -2555,8 +2512,7 @@ class Log(LASFile):
                     series_sum = series.sum()
                 else:
                     ### multiply by step rate for summations ###
-                    series_sum = \
-                              (series * sample_rate[curve_rows]).sum()
+                    series_sum = (series * sample_rate[curve_rows]).sum()
 
                 formation_data[curve + '_SUM'] = series_sum
 
@@ -2565,11 +2521,9 @@ class Log(LASFile):
 
                     pay_series = self[curve][pay_depth_index]
 
-                    formation_data[curve + '_' + p + '_MEAN'] = \
-                                                      pay_series.mean()
+                    formation_data[curve + '_' + p + '_MEAN'] = pay_series.mean()
 
-                    formation_data[curve + '_' + p + '_STD'] = \
-                                                       pay_series.std()
+                    formation_data[curve + '_' + p + '_STD'] = pay_series.std()
 
                     if curve in hc_columns:
                         pay_series_sum = pay_series.sum()
@@ -2578,12 +2532,10 @@ class Log(LASFile):
                         pay_series_sum = (pay_series * \
                                     sample_rate[pay_depth_index]).sum()
 
-                    formation_data[curve + '_' + p + '_SUM'] = \
-                                                         pay_series_sum
+                    formation_data[curve + '_' + p + '_SUM'] = pay_series_sum
             for facie in facies:
                 if facie not in self.keys():
-                    raise ValueError('Curve %s not in log curves.' \
-                                     % facie)
+                    raise ValueError(f'Curve {facie} not in log curves.')
                 facie_rows = depth_index & ~np.isnan(self[curve]) & \
                                             np.isfinite(self[curve])
                 series = self[facie][facie_rows]
@@ -2592,8 +2544,7 @@ class Log(LASFile):
                     formation_data[name + '_SUM'] = \
                     np.sum(sample_rate[facie_rows] * (series == label))
                     formation_data[name + '_FRACTION'] = \
-                                     formation_data[name + '_SUM'] /  \
-                                     np.sum(sample_rate[depth_index])
+                                    formation_data[name + '_SUM'] / np.sum(sample_rate[depth_index])
 
 
             stats_data[f] = formation_data
@@ -2606,8 +2557,8 @@ class Log(LASFile):
         return df
 
     def statistics_to_csv(self, file_path, replace = False,
-                          formations = [], curves = ['PHIE'],
-                          pay_flags = [], facies = []):
+                            formations = [], curves = ['PHIE'],
+                            pay_flags = [], facies = []):
         """
         Saves curve statistcs for given formations and curves to a csv
 
@@ -2657,13 +2608,12 @@ class Log(LASFile):
         """
 
         new_df = self.statistics(formations = formations,
-                                 curves = curves,
-                                 pay_flags = pay_flags,
-                                 facies = facies)
+                                curves = curves,
+                                pay_flags = pay_flags,
+                                facies = facies)
 
         try:
-            prev_df = pd.read_csv(file_path, dtype = {'API': str,
-                                                       'UWI': str})
+            prev_df = pd.read_csv(file_path, dtype = {'API': str, 'UWI': str})
         except:
             prev_df = pd.DataFrame([])
 
@@ -2673,9 +2623,9 @@ class Log(LASFile):
                             (prev_df.FORMATION == row.FORMATION)].index
 
                 prev_df.drop(drop_indexes, inplace = True)
-            new_df = prev_df.append(new_df)
+            new_df = pd.concat([prev_df, new_df])
         else:
-            new_df = prev_df.append(new_df)
+            new_df = pd.concat([prev_df, new_df])
 
         new_df = new_df.set_index(['UWI', 'FORMATION'])
 
@@ -2766,7 +2716,7 @@ class Log(LASFile):
         df.to_csv(*args, **kwargs)
 
     def write(self, file_path, version = 2.0, wrap = False,
-              STRT = None, STOP = None, STEP = None, fmt = '%10.5g'):
+                STRT = None, STOP = None, STEP = None, fmt = '%10.5g'):
         """
         Writes to las file, and overwrites if file exisits. Uses parent
         class LASFile.write method with specified defaults.
@@ -2804,7 +2754,7 @@ class Log(LASFile):
 
         """
 
-        with open(file_path, 'w') as f:
+        with open(file_path, 'w', encoding='utf-8') as f:
             super(Log, self).write(f, version = version, wrap = wrap,
-                                   STRT = STRT, STOP = STOP,
-                                   STEP = None, fmt = fmt)
+                                    STRT = STRT, STOP = STOP,
+                                    STEP = None, fmt = fmt)

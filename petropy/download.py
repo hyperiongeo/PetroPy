@@ -17,8 +17,10 @@ from zipfile import ZipFile
 from io import BytesIO
 import pandas as pd
 
-
-from urllib.request import urlopen
+if sys.version_info[0] < 3:
+    from urllib2 import urlopen
+else:
+    from urllib.request import urlopen
 
 from .log import Log
 
@@ -86,7 +88,7 @@ def ul_lands_download(save_dir = None):
     time.sleep(2)
 
     total_time = (time.time() - start_time) / 60.0
-    print('Find Files Time: %.2f minutes' % total_time)
+    print(f'Find Files Time: {total_time:%.2f} minutes')
 
     process_time = time.time()
 
@@ -100,7 +102,7 @@ def ul_lands_download(save_dir = None):
 
     chunk_time = time.time()
     # chunck paths into groups of 1000 las files
-    print('Number of las files: %i' % len(paths))
+    print(f'Number of las files: {len(paths)}')
     total_time = (time.time() - process_time) / 60.0
     print('Prcoess Filenames Time: %.2f minutes' % total_time)
 
@@ -125,7 +127,7 @@ def ul_lands_download(save_dir = None):
     inventory_time = time.time()
     df = create_log_inventory_table(save_dir)
     total_time = (time.time() - chunk_time) / 60.0
-    print('Inventory Time: %.2f minutes' % total_time)
+    print(f'Inventory Time: {total_time:%.2f} minutes')
 
     return df
 
@@ -170,7 +172,6 @@ def kgs_download(save_dir = None):
     """
 
     urls = [
-        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2019.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2018.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2017.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2016.zip',
@@ -184,7 +185,8 @@ def kgs_download(save_dir = None):
     ]
 
     if save_dir is None:
-        save_dir = os.path.join(os.path.dirname(__file__), 'data',  'kgs')
+        save_dir = os.path.join(os.path.dirname(__file__), 'data',
+                                'kgs')
 
     for url in urls:
         year_dir = os.path.join(save_dir,

@@ -46,7 +46,7 @@ def log_data(source):
     if source in paths:
         las_path = paths[source]
     else:
-        raise ValueError('%s is not valid source' % source)
+        raise ValueError(f"{source} is not valid source")
 
     log = Log(las_path)
     log.tops_from_csv()

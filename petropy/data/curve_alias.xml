@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CURVES>
-
     <CAL_N>
         <CAL_N/>
         <C1/>
@@ -734,5 +733,4 @@
         <SPA_/>
         <SPS/>
     </SP_N>
-
 </CURVES>

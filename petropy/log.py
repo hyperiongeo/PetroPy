@@ -93,9 +93,9 @@ class Log(LASFile):
                     if alias.tag not in self.keys():
                         curve_item = self.curves[curve.tag]
                         self.add_curve(alias.tag, self[curve.tag],
-                                       unit = curve_item.unit,
-                                       value = curve_item.value,
-                                       descr = curve_item.descr)
+                                    unit = curve_item.unit,
+                                    value = curve_item.value,
+                                    descr = curve_item.descr)
                     break
 
         if 'RHOB_N' not in self.keys() and 'DPHI_N' in self.keys():
@@ -779,9 +779,9 @@ class Log(LASFile):
                     data[depth_index] = curve['data']
                     curve['data'] = data
                     self.add_curve(curve['mnemoic'],
-                                  data = curve['data'],
-                                  unit = curve['unit'],
-                                  descr = curve['descr'])
+                                    data = curve['data'],
+                                    unit = curve['unit'],
+                                    descr = curve['descr'])
 
         ### oil curves ###
         else:
@@ -802,13 +802,13 @@ class Log(LASFile):
                     data[depth_index] = curve['data']
                     curve['data'] = data
                     self.add_curve(curve['mnemoic'],
-                                   data = curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    data = curve['data'],
+                                    unit = curve['unit'],
+                                    descr = curve['descr'])
 
 
     def formation_fluid_properties(self, formations,
-                                   parameter = 'default'):
+                                    parameter = 'default'):
         """
         Calculate fluid properties over formations with preloaded
         paramters

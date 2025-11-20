@@ -33,7 +33,7 @@ file or PetroPy logo. To download all files, view the `examples folder`_ on GitH
 .. _examples folder: https://github.com/toddheitmann/PetroPy/tree/master/examples
 """
 import sys
-sys.path.append(r'C:\Users\hooge\GitHub\Geology\PetroPy')
+sys.path.append(r'C:\Users\hooge\Documents\GitHub\PetroPy')
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -130,8 +130,8 @@ viewer.show()
 
 # log.add_pay_flag(f, greater_than_or_equal = flag_2_gtoe)
 
-# log.add_pay_flag(f, greater_than_or_equal = flag_3_gtoe,
-#                 less_than_or_equal = flag_3_ltoe)
+log.add_pay_flag(f, greater_than_or_equal = flag_3_gtoe,
+                 less_than_or_equal = flag_3_ltoe)
 
 # ### 9. electrofacies ###
 
@@ -148,7 +148,8 @@ viewer.show()
 # # finding 6 clusters of electrofacies         #
 # # with RESDEEP_N logarithmically scaled       #
 
-# logs = ptr.electrofacies(logs, f, electro_logs, 6, log_scale = ['RESDEEP_N'])
+logs = ptr.electrofacies(logs, f, electro_logs, 6,
+                         log_scale = ['RESDEEP_N'])
 
 # # unpack log object from returned list        #
 
@@ -165,9 +166,9 @@ viewer.show()
 # # update the line if the well, formation is   #
 # # already included in the csv file            #
 
-# log.statistics_to_csv('wfmp_statistics.csv', replace = True,
-#                       formations = f, curves = stats_curves)
-#                     #   pay_flags = pay_flags, facies = facies_curves)
+log.statistics_to_csv('wfmp_statistics.csv', replace = True,
+                      formations = f, curves = stats_curves,
+                      pay_flags = pay_flags, facies = facies_curves)
 
 # ### 11. export data ###
 
@@ -195,8 +196,8 @@ viewer.show()
 # # create LogViewer with the default full_oil #
 # # template included in petropy               #
 
-# viewer = ptr.LogViewer(log, top = top, height = height,
-#                        template_defaults = 'full_oil')
+viewer = ptr.LogViewer(log, top = top, height = height,
+                       template_defaults = 'full_oil')
 
 # # set viewer to 17x11 inches size for use in #
 # # PowerPoint or printing to larger paper     #

@@ -7,31 +7,30 @@
 						"_display_name": "CAL",
 						"_curve_name": "CAL_N",
 						"_color": "#FF0000",
-						"_left": 0,
-						"_right": 16
-
+						"_left": "0",
+						"_right": "16"
 					},
 					{
 						"_display_name": "GR",
 						"_curve_name": "GR_N",
 						"_color": "#006400",
-						"_left": 0,
-						"_right": 150,
+						"_left": "0",
+						"_right": "150",
 						"_fill": "left",
 						"_fill_color_map": "Greens",
-						"_left_color_value":20
+						"_left_color_value": "20"
 					}
 				],
 				"_display_name": "GAMMA RAY",
-				"_width": 1.5,
-				"_major_lines": 3
+				"_width": "1.5",
+				"_major_lines": "3"
 			},
 			{
 				"_display_name": "DEPTH",
-				"_number_spacing":50,
-				"_tick_spacing": 10,
-				"_line_spacing": 100,
-				"_width": 0.75
+				"_number_spacing": "50",
+				"_tick_spacing": "10",
+				"_line_spacing": "100",
+				"_width": "0.75"
 			},
 			{
 				"curve": [
@@ -39,22 +38,22 @@
 						"_display_name": "RESMED",
 						"_curve_name": "RESMED_N",
 						"_color": "#cc0000",
-						"_left": 2,
-						"_right": 2000
+						"_left": "2",
+						"_right": "2000"
 					},
 					{
 						"_display_name": "RESDEEP",
 						"_curve_name": "RESDEEP_N",
 						"_color": "#330000",
-						"_left": 2,
-						"_right": 2000,
-						"_right_cutoff_fill": 20,
+						"_left": "2",
+						"_right": "2000",
+						"_right_cutoff_fill": "20",
 						"_right_cutoff_fill_color": "#ff9994"
 					}
 				],
 				"_display_name": "RESISTIVITY",
 				"_scale": "log",
-				"_width": 2
+				"_width": "2"
 			},
 			{
 				"curve": [
@@ -62,46 +61,46 @@
 						"_display_name": "PE",
 						"_curve_name": "PE_N",
 						"_color": "#000000",
-						"_left": 0,
-						"_right": 10,
-						"_right_cutoff_fill": 3,
+						"_left": "0",
+						"_right": "10",
+						"_right_cutoff_fill": "3",
 						"_right_cutoff_fill_color": "#cde7f0",
-						"_left_cutoff_fill": 3,
+						"_left_cutoff_fill": "3",
 						"_left_cutoff_fill_color": "#ffff99"
 					},
 					{
 						"_display_name": "RHOB",
 						"_curve_name": "RHOB_N",
 						"_color": "#FF0000",
-						"_left": 1.95,
-						"_right": 2.95
+						"_left": "1.95",
+						"_right": "2.95"
 					},
 					{
 						"_display_name": "NPHI",
 						"_curve_name": "NPHI_N",
 						"_color": "#0099CC",
-						"_left": 0.45,
-						"_right": -0.15,
+						"_left": "0.45",
+						"_right": "-0.15",
 						"_line_style": "--"
 					}
 				],
 				"_display_name": "NEUTRON DENSITY",
-				"_width": 2,
-				"_major_lines": 9
+				"_width": "2",
+				"_major_lines": "9"
 			},
 			{
 				"curve": {
 					"_display_name": "TOC",
 					"_curve_name": "TOC",
 					"_color": "#000000",
-					"_left": 0.1,
-					"_right": 0,
+					"_left": "0.1",
+					"_right": "0",
 					"_fill": "right",
 					"_fill_color": "#aa0000"
 				},
 				"_display_name": "",
-				"_width": 1,
-				"_major_lines": 4
+				"_width": "1",
+				"_major_lines": "4"
 			},
 			{
 				"curve": [
@@ -137,11 +136,11 @@
 					}
 				],
 				"_display_name": "MINERALOGOY",
-				"_width": 2,
-				"_left": 0,
-				"_right": 1,
-				"_major_lines": 9,
-				"_cumulative": true
+				"_width": "2",
+				"_left": "0",
+				"_right": "1",
+				"_major_lines": "9",
+				"_cumulative": "True"
 			},
 			{
 				"curve": [
@@ -162,25 +161,25 @@
 					}
 				],
 				"_display_name": "POROSITY",
-				"_width": 1,
-				"_major_lines": 9,
-				"_left": 0.2,
-				"_right": 0,
-				"_cumulative": true
+				"_width": "1",
+				"_major_lines": "9",
+				"_left": "0.2",
+				"_right": "0",
+				"_cumulative": "True"
 			},
 			{
 				"curve": {
 					"_display_name": "Sw",
 					"_curve_name": "SW",
 					"_color": "#0000ff",
-					"_left": 1,
-					"_right": 0,
+					"_left": "1",
+					"_right": "0",
 					"_fill": "right",
 					"_fill_color": "#bfefff"
 				},
 				"_display_name": "SATURATION",
-				"_width": 1,
-				"_major_lines": 9
+				"_width": "1",
+				"_major_lines": "9"
 			},
 			{
 				"curve": [
@@ -188,8 +187,8 @@
 						"_display_name": "SUM OIP",
 						"_curve_name": "OIP_SUM",
 						"_color": "#000000",
-						"_left": 50,
-						"_right": 0,
+						"_left": "50",
+						"_right": "0",
 						"_fill": "right",
 						"_fill_color": "#CCE0CC"
 					},
@@ -197,31 +196,15 @@
 						"_display_name": "OIP",
 						"_curve_name": "OIP",
 						"_color": "#006400",
-						"_left": 0,
-						"_right": 0.25,
+						"_left": "0",
+						"_right": "0.25",
 						"_fill": "left",
 						"_fill_color": "#CCE0CC"
 					}
 				],
 				"_display_name": "OIL IN PLACE",
-				"_width": 1.5,
-				"_major_lines": 9
-			},
-			{
-				"curve": {
-					"_display_name": "",
-					"_curve_name": "FACIES",
-					"_color": "#000000",
-					"_left": 0,
-					"_right": 1,
-					"_fill": "left",
-					"_fill_color_map": "Paired",
-					"_left_color_value": 1,
-					"_right_color_value": 8
-				},
-				"_display_name": "ELECTROFACIES",
-				"_width": 1.5,
-				"_major_lines": 1
+				"_width": "1.5",
+				"_major_lines": "9"
 			}
 		]
 	}

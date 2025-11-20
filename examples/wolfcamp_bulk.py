@@ -45,7 +45,11 @@ files or PetroPy logo. To download all files, view the `examples folder`_ on Git
 .. _examples folder: https://github.com/toddheitmann/PetroPy/tree/master/examples
 """
 import sys
-sys.path.append(r'C:\Users\hooge\GitHub\Geology\PetroPy')
+# sys.path.append(r'C:\Users\hooge\GitHub\Geology\PetroPy')
+sys.path.append(r"C:\Users\hooge\Documents\GitHub\Geology\PetroPy")
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
 
 import petropy as ptr
 

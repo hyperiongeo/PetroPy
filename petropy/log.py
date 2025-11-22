@@ -93,9 +93,9 @@ class Log(LASFile):
                     if alias.tag not in self.keys():
                         curve_item = self.curves[curve.tag]
                         self.add_curve(alias.tag, self[curve.tag],
-                                       unit = curve_item.unit,
-                                       value = curve_item.value,
-                                       descr = curve_item.descr)
+                                        unit = curve_item.unit,
+                                        value = curve_item.value,
+                                        descr = curve_item.descr)
                     break
 
         if 'RHOB_N' not in self.keys() and 'DPHI_N' in self.keys():
@@ -166,7 +166,6 @@ class Log(LASFile):
         well_tops_df = top_df[top_df.uwi == str(self.well['UWI'].value)]
         for _, row in well_tops_df.iterrows():
             self.tops[row.form] = row.depth
-
 
     def next_formation_depth(self, formation):
         """
@@ -553,18 +552,15 @@ class Log(LASFile):
                   493.1 * yn2 + 3200.1 * yh20
 
             tpc = (1.0 - yh2s - yco2 - yn2 - yh20) * tpc_h + \
-                  672.35 * yh2s + 547.58 * yco2 + \
-                  227.16 * yn2 + 1164.9 * yh20
+                  672.35 * yh2s + 547.58 * yco2 + 227.16 * yn2 + 1164.9 * yh20
 
             # Wichert-Aziz correction for H2S and CO2
             if yco2 > 0 or yh2s > 0:
-                epsilon = 120 * ((yco2 + yh2s) ** 0.9 - \
-                          (yco2 + yh2s) ** 1.6) + \
+                epsilon = 120 * ((yco2 + yh2s) ** 0.9 - (yco2 + yh2s) ** 1.6) + \
                           15 * (yh2s ** 0.5 - yh2s ** 4)
 
                 tpc_temp = tpc - epsilon
-                ppc = (ppc_a * tpc_temp) / \
-                      (tpc + (yh2s * (1.0 - yh2s) * epsilon))
+                ppc = (ppc_a * tpc_temp) / (tpc + (yh2s * (1.0 - yh2s) * epsilon))
 
                 tpc = tpc_temp
             # Casey correction for nitrogen and water vapor
@@ -581,16 +577,16 @@ class Log(LASFile):
 
             ### z factor from Dranchuk and Abou-Kassem fit of Standing and Katz chart
             a = [0.3265,
-                -1.07,
-                -0.5339,
-                 0.01569,
-                -0.05165,
-                 0.5475,
-                -0.7361,
-                 0.1844,
-                 0.1056,
-                 0.6134,
-                 0.721]
+                    -1.07,
+                    -0.5339,
+                    0.01569,
+                    -0.05165,
+                    0.5475,
+                    -0.7361,
+                    0.1844,
+                    0.1056,
+                    0.6134,
+                    0.721]
 
             t2 = a[0] * tpr + a[1] + a[2] / (tpr ** 2) + \
                  a[3] / (tpr ** 3) + a[4] / (tpr ** 4)
@@ -613,8 +609,7 @@ class Log(LASFile):
 
                 fp = tpr + 2 * t2 * r + 3 * t3 * r ** 2 + \
                      6 * t4 * r ** 5 + t5 * r ** 2 * \
-                     np.exp(-a[10] * r ** 2) * \
-                     (3 + a[10] * r ** 2 * (3 - 2 * a[10] * r ** 2))
+                     np.exp(-a[10] * r ** 2) * (3 + a[10] * r ** 2 * (3 - 2 * a[10] * r ** 2))
 
                 r = r - f/fp
                 diff = np.abs(z - (0.27 * ppr / tpr / r)).max()
@@ -635,16 +630,13 @@ class Log(LASFile):
             ### gas viscosity Lee Gonzalez Eakin method ###
             ### Eqs. 1.63-1.67 GRE ###
             k = ((9.379 + 0.01607 * (28.9625 * gas_grav)) * \
-                              (form_temp + 459.67) ** 1.5) / \
-                              (209.2 + 19.26 * (28.9625 * gas_grav) + \
-                              (form_temp + 459.67))
+                                (form_temp + 459.67) ** 1.5) / \
+                                (209.2 + 19.26 * (28.9625 * gas_grav) + (form_temp + 459.67))
 
-            x = 3.448 + 986.4 / \
-                (form_temp + 459.67) + 0.01009 * (28.9625 * gas_grav)
+            x = 3.448 + 986.4 / (form_temp + 459.67) + 0.01009 * (28.9625 * gas_grav)
 
             y = 2.447 - 0.2224 * x
             mu_hc = 10 **-4 * k * np.exp(x * rho_hc ** y)
-
 
         ### oil reservoir ###
         else:
@@ -662,8 +654,7 @@ class Log(LASFile):
                  (-10.393 * oil_api / (form_temp + 459.67))) ** 0.84246
                 ### gas saturated bubble-point ###
                 bo = 1 + 4.677 * 10 ** -4 * rs + 1.751 * 10 ** -5 * \
-                              (form_temp - 60) * (oil_api / ygs100) - \
-                              1.811 * 10 ** -8 * rs * \
+                              (form_temp - 60) * (oil_api / ygs100) - 1.811 * 10 ** -8 * rs * \
                               (form_temp - 60) * (oil_api / ygs100)
             else:
                 if rs == 0 or rs is None:
@@ -676,8 +667,7 @@ class Log(LASFile):
                 ### gas saturated bubble-point ###
                 bo = 1 + 4.670 * 10 ** -4 * rs + 1.1 * \
                    10 ** -5 * (form_temp - 60) * (oil_api / ygs100) + \
-                   1.337 * 10 ** -9 * rs * (form_temp - 60) * \
-                   (oil_api / ygs100)
+                   1.337 * 10 ** -9 * rs * (form_temp - 60) * (oil_api / ygs100)
 
             ### calculate bo for undersaturated oil ###
             pp_gt_bp = np.where(pore_press > bp + 100)[0]
@@ -755,7 +745,7 @@ class Log(LASFile):
                 data[depth_index] = curve['data']
                 curve['data'] = data
                 self.add_curve(curve['mnemoic'], data = curve['data'],
-                          unit = curve['unit'], descr = curve['descr'])
+                                unit = curve['unit'], descr = curve['descr'])
 
         ### gas curves ###
         if oil_api == 0:
@@ -779,9 +769,9 @@ class Log(LASFile):
                     data[depth_index] = curve['data']
                     curve['data'] = data
                     self.add_curve(curve['mnemoic'],
-                                  data = curve['data'],
-                                  unit = curve['unit'],
-                                  descr = curve['descr'])
+                                    data = curve['data'],
+                                    unit = curve['unit'],
+                                    descr = curve['descr'])
 
         ### oil curves ###
         else:
@@ -802,13 +792,12 @@ class Log(LASFile):
                     data[depth_index] = curve['data']
                     curve['data'] = data
                     self.add_curve(curve['mnemoic'],
-                                   data = curve['data'],
-                                   unit = curve['unit'],
-                                   descr = curve['descr'])
+                                    data = curve['data'],
+                                    unit = curve['unit'],
+                                    descr = curve['descr'])
 
 
-    def formation_fluid_properties(self, formations,
-                                   parameter = 'default'):
+    def formation_fluid_properties(self, formations, parameter = 'default'):
         """
         Calculate fluid properties over formations with preloaded
         paramters
@@ -1109,7 +1098,7 @@ class Log(LASFile):
         .. math::
 
             VCLAY = \\frac{nphia - nphi\_matrix}
-                          {nphi\_clay - nphi\_matrix}
+                            {nphi\_clay - nphi\_matrix}
 
         V. Neutron Density
 
@@ -1155,7 +1144,7 @@ class Log(LASFile):
                 4 * (NPHI\_LOG - passey\_baseline\_nphi)
 
             TOC&=\\frac{dlr\_nphi * 10^{2.297 - 0.1688 * passey\_lom}}
-                       {100}
+                        {100}
 
         III. Passey's Density Delta Log R
 
@@ -1165,7 +1154,7 @@ class Log(LASFile):
                 2.5 * (RHOB\_LOG - passey\_baseline\_rhob)
 
             TOC&=\\frac{dlr\_nphi * 10^{2.297 - 0.1688 * passey\_lom}}
-                       {100}
+                        {100}
 
         For conventional reservoirs without organics,
         set :code:`vclay_cutoff = 1`.
@@ -2545,7 +2534,6 @@ class Log(LASFile):
                     np.sum(sample_rate[facie_rows] * (series == label))
                     formation_data[name + '_FRACTION'] = \
                                     formation_data[name + '_SUM'] / np.sum(sample_rate[depth_index])
-
 
             stats_data[f] = formation_data
 

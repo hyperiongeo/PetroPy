@@ -83,7 +83,8 @@
  MCST.DEGF                      74.0000: Mud Cake Sample Temperature 
  MRT .DEGF                     141.0000: Maximum Recorded Temperature
  BHT .DEGF                     141.0000: Bottom Hole Temperature     
-~A   DEPT       CALI       DPHI       GR         NPHI       PE         RHOB       PHIX       C13        C24        DT         SPHI       GR3        ILD        ILM        SGRD       SP    
+#   DEPT       CALI       DPHI       GR         NPHI       PE         RHOB       PHIX       C13        C24        DT         SPHI       GR3        ILD        ILM        SGRD       SP    
+~A
   2587.0000   -999.250   -999.250   -999.250   -999.250   -999.250   -999.250   -999.250      3.699      3.736     55.211      0.054   -999.250   -999.250   -999.250   -999.250   -999.250
   2587.5000   -999.250   -999.250   -999.250   -999.250   -999.250   -999.250   -999.250      3.702      3.737     55.473      0.056   -999.250   -999.250   -999.250   -999.250   -999.250
   2588.0000   -999.250   -999.250   -999.250   -999.250   -999.250   -999.250   -999.250      3.693      3.739     55.467      0.056   -999.250   -999.250   -999.250   -999.250   -999.250

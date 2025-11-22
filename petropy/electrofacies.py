@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import MiniBatchKMeans
 
 def electrofacies(logs, formations, curves, n_clusters, log_scale = [],
-                  n_components = 0.85, curve_name = 'FACIES'):
+                    n_components = 0.85, curve_name = 'FACIES'):
     """
     Electrofacies function to group intervals by rock type. Also
     referred to as heterogenous rock analysis.

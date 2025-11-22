@@ -22,6 +22,7 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
 # mpl.rcParams['backend'] = 'TkAgg'
+# mpl.rcParams['backend'] = 'Qt5Agg'
 plt.rcParams['toolbar'] = 'toolmanager'
 
 

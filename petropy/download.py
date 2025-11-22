@@ -7,7 +7,6 @@ function downloads the specific dataset to parse and unzip.
 
 """
 
-
 import os
 import sys
 import time
@@ -172,6 +171,13 @@ def kgs_download(save_dir = None):
     """
 
     urls = [
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2025.zip',
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2024.zip',
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2023.zip',
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2022.zip',
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2021.zip',
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2020.zip',
+        'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2019.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2018.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2017.zip',
         'http://www.kgs.ku.edu/PRS/Scans/Log_Summary/2016.zip',
@@ -185,12 +191,10 @@ def kgs_download(save_dir = None):
     ]
 
     if save_dir is None:
-        save_dir = os.path.join(os.path.dirname(__file__), 'data',
-                                'kgs')
+        save_dir = os.path.join(os.path.dirname(__file__), 'data', 'kgs')
 
     for url in urls:
-        year_dir = os.path.join(save_dir,
-                                url.split('/')[-1].split('.')[0])
+        year_dir = os.path.join(save_dir, url.split('/')[-1].split('.')[0])
         if not os.path.isdir(year_dir):
             os.makedirs(year_dir)
 
@@ -245,7 +249,7 @@ def create_log_inventory_table(save_dir, folder_copy = None):
             os.makedirs(folder_copy)
 
     error_log = os.path.join(save_dir, 'error_log.txt')
-    with open(error_log, 'w') as f:
+    with open(error_log, 'w', encoding='utf-8') as f:
         f.write('LAS INVENTORY ERROR LOG\n')
         f.write('-----------------------\n')
 
@@ -257,7 +261,6 @@ def create_log_inventory_table(save_dir, folder_copy = None):
                 log = Log(las_path)
 
                 if folder_copy is not None:
-
                     keys = ['WELL', 'UWI', 'API']
                     new_name = ''
                     for k in keys:
@@ -273,7 +276,7 @@ def create_log_inventory_table(save_dir, folder_copy = None):
                     log.write(new_name)
 
             except:
-                with open(error_log, 'a') as f:
+                with open(error_log, 'a', encoding='utf-8') as f:
                     f.write(las_path)
                     f.write('\n')
                 continue

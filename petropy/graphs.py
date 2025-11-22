@@ -6,7 +6,6 @@ bulk shifting.
 
 """
 
-
 import os
 import gc
 import numpy as np
@@ -21,16 +20,15 @@ if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
 
-# mpl.rcParams['backend'] = 'TkAgg'
-# mpl.rcParams['backend'] = 'Qt5Agg'
-plt.rcParams['toolbar'] = 'toolmanager'
+mpl.rcParams['backend'] = 'TkAgg'
+# plt.rcParams['toolbar'] = 'toolmanager'
 
 
 class LogViewer:
     """LogViewer
 
     Uses matplotlib to create a figure and axes to display log data.
-    XML templates are required to diplay curve data, with a few
+    XML templates are required to display curve data, with a few
     defaults provided.
 
     Attributes
@@ -293,7 +291,7 @@ class LogViewer:
 
             if 'scale' in track.attrib:
                 scale = track.attrib['scale']
-                #ax.set_xscale(scale, nonposx = 'clip')  NOTE SURE WHERE IS PARAMETER BELOS NOW, NOV 2022
+                # ax.set_xscale(scale, nonposx = 'clip')
                 ax.set_xscale(scale)
 
             track_width = 1

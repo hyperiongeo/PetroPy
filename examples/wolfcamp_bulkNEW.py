@@ -49,6 +49,12 @@ sys.path.append(r'C:\Users\hooge\GitHub\Geology\PetroPy')
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
+# sys.path.append(r'C:\Users\hooge\GitHub\Geology\PetroPy')
+sys.path.append(r"C:\Users\hooge\Documents\GitHub\Geology\PetroPy")
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
+
 import petropy as ptr
 
 # use glob to get file paths
